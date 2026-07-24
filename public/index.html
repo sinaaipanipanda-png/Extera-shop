@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فروشگاه ستاره‌ای</title>
+    <style>
+        * { box-sizing: border-box; font-family: Tahoma, Arial, sans-serif; }
+        body { background-color: #f0f2f5; margin: 0; padding: 15px; text-align: center; color: #333; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); max-width: 500px; margin: 15px auto; text-align: right; }
+        h2, h3 { text-align: center; color: #2c3e50; margin-top: 0; }
+        input, button, textarea { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ccc; font-size: 14px; }
+        button { background-color: #28a745; color: white; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        button:hover { opacity: 0.9; }
+        .btn-blue { background-color: #007bff; }
+        .btn-danger { background-color: #dc3545; }
+        .btn-warning { background-color: #ffc107; color: #212529; }
+        .hidden { display: none; }
+        .star-badge { background: #fff3cd; color: #856404; padding: 6px 14px; border-radius: 20px; font-weight: bold; display: inline-block; }
+        .item-box { border: 1px solid #e9ecef; background: #fafafa; padding: 12px; border-radius: 8px; margin-bottom: 10px; }
+        .item-box img { width: 100%; max-height: 150px; object-fit: cover; border-radius: 6px; }
+        .flex-btn { display: flex; gap: 5px; margin-top: 5px; }
+        .flex-btn button { flex: 1; padding: 8px; font-size: 12px; }
+        .stats-box { background: #e8f4f8; padding: 10px; border-radius: 8px; text-align: center; font-size: 13px; font-weight: bold; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+    <!-- صفحه ورود و ثبت نام -->
+    <div id="auth-section" class="card">
+        <h2 id="auth-title">ورود به حساب</h2>
+        <input type="text" id="username" placeholder="نام کاربری">
+        <input type="password" id="password" placeholder="رمز عبور">
+        <button onclick="login()">ورود</button>
+        <button class="btn-blue" onclick="register()">ثبت‌نام (۱۰ ستاره هدیه)</button>
+        <p id="auth-msg" style="color: red; text-align: center;"></p>
+    </div>
+
+    <!-- پنل کاربر عادی -->
+    <div id="user-section" class="card hidden">
+        <h2>خوش آمدید <span id="user-name"></span> 👋</h2>
+        <div style="text-align: center; margin-bottom: 15px;">
+            موجودی حساب: <span id="user-stars" class="star-badge">0 ⭐</span>
+        </div>
+        <button class="btn-danger" onclick="logout()">خروج از حساب</button>
+
+        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+        <h3>🛍 فروشگاه محصولات</h3>
+        <div id="products-list"></div>
+    </div>
+
+    <!-- پنل مدیریت (ادمین) -->
+    <div id="admin-section" class="card hidden" style="max-width: 650px;">
+        <h2>⚙️ پنل مدیریت</h2>
+        <div id="admin-stats" class="stats-box">در حال بارگذاری آمار...</div>
+        <button class="btn-danger" onclick="logout()">خروج از پنل مدیریت</button>
+
+        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+        <h3>➕ افزودن محصول جدید</h3>
+        <input type="text" id="prod-name" placeholder="نام محصول">
+        <input type="number" id="prod-price" placeholder="قیمت (تعداد ستاره)">
+        <input type="text" id="prod-desc" placeholder="توضیحات محصول">
+        <input type="text" id="prod-img" placeholder="لینک تصویر محصول (اختیاری)">
+        <button onclick="addProduct()">افزودن به فروشگاه</button>
+
+        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+        <h3>👥 مدیریت کاربران و ستاره‌ها</h3>
+        <input type="text" id="search-user" placeholder="🔍 جستجوی نام کاربر..." onkeyup="filterUsers()">
+        <div id="admin-users"></div>
+
+        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+        <h3>📦 لیست سفارش‌ها</h3>
+        <div id="admin-orders"></div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let allUsersCache = [];
+
+        async function register() {
+            const u = document.getElementById('username').value.trim();
+            const p = document.getElementById('password').value.trim();
+            if(!u || !p) return alert('نام کاربری و رمز عبور را وارد کنید.');
+
+            const res = await fetch('/api/register', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ username: u, password: p })
+            });
+            const data = await res.json();
+            alert(data.message || data.error);
+        }
+
+        async function login() {
+            const u = document.getElementById('username').value.trim();
+            const p = document.getElementById('password').value.trim();
+            if(!u || !p) return alert('نام کاربری و رمز عبور را وارد کنید.');
+
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ username: u, password: p })
+            });
+            const data = await res.json();
+
+            if (res.ok) {
+                currentUser = data.user;
+                document.getElementById('auth-section').classList.add('hidden');
+
+                if (currentUser.isAdmin) {
+                    document.getElementById('admin-section').classList.remove('hidden');
+                    loadAdminData();
+                } else {
+                    document.getElementById('user-section').classList.remove('hidden');
+                    document.getElementById('user-name').innerText = currentUser.username;
+                    document.getElementById('user-stars').innerText = currentUser.stars + ' ⭐';
+                    loadProducts();
+                }
+            } else {
+                document.getElementById('auth-msg').innerText = data.error;
+            }
+        }
+
+        async function loadProducts() {
+            const res = await fetch('/api/products');
+            const products = await res.json();
+            const container = document.getElementById('products-list');
+            container.innerHTML = '';
+
+            if(products.length === 0) {
+                container.innerHTML = '<p style="text-align:center;">محصولی برای نمایش وجود ندارد.</p>';
+                return;
+            }
+
+            products.forEach(p => {
+                container.innerHTML += `
+                    <div class="item-box">
+                        <img src="${p.image}" alt="${p.name}">
+                        <h4 style="margin: 8px 0;">${p.name}</h4>
+                        <p style="font-size: 13px; color: #666; margin: 4px 0;">${p.description}</p>
+                        <p>قیمت: <b style="color:#d97706;">${p.price} ستاره</b></p>
+                        <button onclick="buyProduct(${p.id})">خرید این محصول</button>
+                    </div>
+                `;
+            });
+        }
+
+        async function buyProduct(productId) {
+            if(!confirm('آیا از خرید این محصول مطمئن هستید؟')) return;
+
+            const res = await fetch('/api/buy', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ userId: currentUser.id, productId })
+            });
+            const data = await res.json();
+            alert(data.message || data.error);
+            if (res.ok) {
+                currentUser.stars = data.remainingStars;
+                document.getElementById('user-stars').innerText = currentUser.stars + ' ⭐';
+            }
+        }
+
+        // توابع پنل مدیریت
+        async function loadAdminData() {
+            const res = await fetch('/api/admin/data');
+            const data = await res.json();
+
+            document.getElementById('admin-stats').innerHTML = 
+                `تعداد کاربران: ${data.stats.totalUsers} نفر | محصولات: ${data.stats.totalProducts} عدد | سفارش‌ها: ${data.stats.totalOrders} عدد`;
+
+            allUsersCache = data.users;
+            renderUsers(allUsersCache);
+
+            // لیست سفارش‌ها
+            const ordersDiv = document.getElementById('admin-orders');
+            ordersDiv.innerHTML = '';
+            if(data.orders.length === 0) ordersDiv.innerHTML = '<p style="text-align:center;">سفارشی ثبت نشده است.</p>';
+
+            data.orders.forEach(o => {
+                ordersDiv.innerHTML += `
+                    <div class="item-box">
+                        <b>کاربر:</b> ${o.username} <br>
+                        <b>محصول:</b> ${o.productName} (${o.price} ستاره)<br>
+                        <b>تاریخ:</b> ${o.date} <br>
+                        <b>وضعیت فعلی:</b> <span style="color:blue;">${o.status}</span>
+                        <div class="flex-btn">
+                            <button onclick="changeOrderStatus(${o.id}, 'تحویل شد')">✅ تحویل شد</button>
+                            <button class="btn-danger" onclick="changeOrderStatus(${o.id}, 'رد شد')">❌ رد شد</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function renderUsers(users) {
+            const usersDiv = document.getElementById('admin-users');
+            usersDiv.innerHTML = '';
+            users.forEach(u => {
+                if(!u.isAdmin) {
+                    usersDiv.innerHTML += `
+                        <div class="item-box">
+                            <b>نام کاربر:</b> ${u.username} | <b>موجودی:</b> ${u.stars} ⭐<br>
+                            <b>وضعیت:</b> ${u.isBanned ? '<span style="color:red;">🚫 بن شده</span>' : '<span style="color:green;">✅ فعال</span>'}
+                            <div class="flex-btn">
+                                <button onclick="updateStars(${u.id}, 5)">+5 ⭐</button>
+                                <button class="btn-warning" onclick="updateStars(${u.id}, -5)">-5 ⭐</button>
+                                <button class="btn-danger" onclick="toggleBan(${u.id})">${u.isBanned ? 'آنبن' : 'بن کردن'}</button>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        function filterUsers() {
+            const query = document.getElementById('search-user').value.toLowerCase();
+            const filtered = allUsersCache.filter(u => u.username.toLowerCase().includes(query));
+            renderUsers(filtered);
+        }
+
+        async function updateStars(userId, amount) {
+            await fetch('/api/admin/update-stars', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ userId, amount })
+            });
+            loadAdminData();
+        }
+
+        async function toggleBan(userId) {
+            await fetch('/api/admin/toggle-ban', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ userId })
+            });
+            loadAdminData();
+        }
+
+        async function addProduct() {
+            const name = document.getElementById('prod-name').value;
+            const price = document.getElementById('prod-price').value;
+            const description = document.getElementById('prod-desc').value;
+            const image = document.getElementById('prod-img').value;
+
+            if(!name || !price) return alert('نام و قیمت محصول را وارد کنید.');
+
+            await fetch('/api/admin/add-product', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ name, price, description, image })
+            });
+            alert('محصول با موفقیت اضافه شد');
+            document.getElementById('prod-name').value = '';
+            document.getElementById('prod-price').value = '';
+            document.getElementById('prod-desc').value = '';
+            document.getElementById('prod-img').value = '';
+            loadAdminData();
+        }
+
+        async function changeOrderStatus(orderId, status) {
+            await fetch('/api/admin/update-order-status', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ orderId, status })
+            });
+            loadAdminData();
+        }
+
+        function logout() {
+            location.reload();
+        }
+    </script>
+</body>
+  </html>
