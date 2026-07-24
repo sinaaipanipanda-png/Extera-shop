@@ -1,0 +1,12 @@
+{
+"name": "star-shop",
+"version": "1.0.0",
+"description": "فروشگاه ستاره‌ای با پنل مدیریت",
+"main": "app.js",
+"scripts": {
+"start": "node app.js"
+},
+"dependencies": {
+"express": "^4.18.2"
+}
+}
