@@ -11,6 +11,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // تنظیم دیتابیس با پشتیبانی از رندر
 const DB_FILE = process.env.RENDER ? '/tmp/database.json' : path.join(__dirname, 'database.json');
 
+// ساخت دیتابیس اولیه
 if (!fs.existsSync(DB_FILE)) {
     const initialData = {
         users: [
@@ -46,11 +47,14 @@ function saveDB(data) {
 
 const BAN_MESSAGE = 'حساب شما به دلایل مختلف ، به حالت تعلیق در آمده ، برای تجدید نظر ، به آیدی @panda009822 در سروش پلاس مراجعه فرمائید.';
 
-// ---------------- ای‌پی‌آی‌های عمومی و کاربران ----------------
+// ---------------- ای‌پی‌آی‌های عمومی ----------------
 
+// ثبت نام
 app.post('/api/register', (req, res) => {
     const { username, password } = req.body;
-    if (!username || !password) return res.status(400).json({ error: 'لطفاً نام کاربری و رمز عبور را وارد کنید.' });
+    if (!username || !password) {
+        return res.status(400).json({ error: 'لطفاً نام کاربری و رمز عبور را وارد کنید.' });
+    }
 
     const db = getDB();
     if (db.users.find(u => u.username.toLowerCase() === username.toLowerCase())) {
@@ -71,38 +75,30 @@ app.post('/api/register', (req, res) => {
     res.json({ message: 'ثبت‌نام با موفقیت انجام شد! ۱۰ ستاره هدیه دریافت کردید.', user: newUser });
 });
 
+// ورود
 app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
     const db = getDB();
     const user = db.users.find(u => u.username === username && u.password === password);
 
-    if (!user) return res.status(401).json({ error: 'نام کاربری یا رمز عبور اشتباه است.' });
-    if (user.isBanned) return res.status(403).json({ error: BAN_MESSAGE });
+    if (!user) {
+        return res.status(401).json({ error: 'نام کاربری یا رمز عبور اشتباه است.' });
+    }
+
+    if (user.isBanned) {
+        return res.status(403).json({ error: BAN_MESSAGE });
+    }
 
     res.json({ message: 'ورود موفقیت‌آمیز', user });
 });
 
-// ویرایش رمز عبور کاربر
-app.post('/api/user/update-password', (req, res) => {
-    const { userId, newPassword } = req.body;
-    if(!newPassword) return res.status(400).json({ error: 'رمز عبور جدید نمی‌تواند خالی باشد.' });
-
-    const db = getDB();
-    const user = db.users.find(u => u.id === userId);
-    if(user) {
-        user.password = newPassword;
-        saveDB(db);
-        res.json({ message: 'رمز عبور شما با موفقیت تغییر کرد.' });
-    } else {
-        res.status(404).json({ error: 'کاربر یافت نشد.' });
-    }
-});
-
+// دریافت محصولات
 app.get('/api/products', (req, res) => {
     const db = getDB();
     res.json(db.products || []);
 });
 
+// دریافت سفارش‌های یک کاربر
 app.get('/api/user/orders', (req, res) => {
     const userId = Number(req.query.userId);
     const db = getDB();
@@ -110,6 +106,7 @@ app.get('/api/user/orders', (req, res) => {
     res.json(userOrders);
 });
 
+// خرید محصول با ستاره
 app.post('/api/buy', (req, res) => {
     const { userId, productId } = req.body;
     const db = getDB();
@@ -139,24 +136,36 @@ app.post('/api/buy', (req, res) => {
     res.json({ message: 'خرید با موفقیت انجام شد.', remainingStars: user.stars });
 });
 
-// ---------------- ای‌پی‌آی‌های تیکت پشتیبانی ----------------
-
-app.post('/api/user/create-ticket', (req, res) => {
-    const { userId, title, message } = req.body;
-    if(!title || !message) return res.status(400).json({ error: 'عنوان و متن تیکت الزامی است.' });
+// تغییر رمز عبور کاربر
+app.post('/api/user/update-profile', (req, res) => {
+    const { userId, newPassword } = req.body;
+    if(!newPassword) return res.status(400).json({ error: 'رمز عبور جدید را وارد کنید.' });
 
     const db = getDB();
     const user = db.users.find(u => u.id === userId);
-    if(!user) return res.status(404).json({ error: 'کاربر پیدا نشد.' });
+    if(user) {
+        user.password = newPassword;
+        saveDB(db);
+        res.json({ message: 'رمز عبور با موفقیت تغییر یافت.' });
+    } else {
+        res.status(404).json({ error: 'کاربر پیدا نشد.' });
+    }
+});
 
+// ارسال تیکت کاربر
+app.post('/api/user/tickets', (req, res) => {
+    const { userId, username, title, message } = req.body;
+    if(!title || !message) return res.status(400).json({ error: 'عنوان و متن پیام الزامی است.' });
+
+    const db = getDB();
     const newTicket = {
         id: Date.now(),
-        userId: user.id,
-        username: user.username,
+        userId,
+        username,
         title,
         message,
-        reply: '',
-        status: 'در انتظار پاسخ',
+        adminReply: '',
+        status: 'در حال بررسی',
         date: new Date().toLocaleDateString('fa-IR')
     };
 
@@ -164,9 +173,10 @@ app.post('/api/user/create-ticket', (req, res) => {
     db.tickets.push(newTicket);
     saveDB(db);
 
-    res.json({ message: 'تیکت شما با موفقیت ارسال شد.' });
+    res.json({ message: 'تیکت با موفقیت ارسال شد.' });
 });
 
+// دریافت تیکت‌های کاربر
 app.get('/api/user/tickets', (req, res) => {
     const userId = Number(req.query.userId);
     const db = getDB();
@@ -174,7 +184,7 @@ app.get('/api/user/tickets', (req, res) => {
     res.json(userTickets);
 });
 
-// ---------------- ای‌پی‌آی‌های پنل مدیریت ----------------
+// ---------------- ای‌پی‌آی‌های مدیریت ----------------
 
 app.get('/api/admin/data', (req, res) => {
     const db = getDB();
@@ -269,12 +279,12 @@ app.post('/api/admin/delete-order', (req, res) => {
 
 // پاسخ به تیکت توسط ادمین
 app.post('/api/admin/reply-ticket', (req, res) => {
-    const { ticketId, reply } = req.body;
+    const { ticketId, reply, status } = req.body;
     const db = getDB();
     const ticket = (db.tickets || []).find(t => t.id === ticketId);
-    if (ticket) {
-        ticket.reply = reply;
-        ticket.status = 'پاسخ داده شده';
+    if(ticket) {
+        ticket.adminReply = reply;
+        ticket.status = status || 'پاسخ داده شد';
         saveDB(db);
         res.json({ message: 'پاسخ ارسال شد.' });
     } else {
