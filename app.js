@@ -11,16 +11,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 // تنظیم دیتابیس با پشتیبانی کامل از رندر
 const DB_FILE = process.env.RENDER ? '/tmp/database.json' : path.join(__dirname, 'database.json');
 
-// ساخت دیتابیس اولیه
+// ساخت دیتابیس اولیه با لیست محصولات خالی
 if (!fs.existsSync(DB_FILE)) {
     const initialData = {
         users: [
             { id: 1, username: 'admin', password: '123', stars: 999, isBanned: false, isAdmin: true }
         ],
-        products: [
-            { id: 1, name: 'اکانت ویژه ۱ ماهه', price: 5, description: 'دسترسی کامل به تمامی امکانات', image: 'https://via.placeholder.com/150' },
-            { id: 2, name: 'کد تخفیف ۵۰ درصدی', price: 8, description: 'قابل استفاده در خرید بعدی', image: 'https://via.placeholder.com/150' }
-        ],
+        products: [], // لیست محصولات خالی شد
         orders: []
     };
     try {
@@ -93,13 +90,21 @@ app.post('/api/login', (req, res) => {
     res.json({ message: 'ورود موفقیت‌آمیز', user });
 });
 
-// محصولات
+// دریافت محصولات
 app.get('/api/products', (req, res) => {
     const db = getDB();
-    res.json(db.products);
+    res.json(db.products || []);
 });
 
-// خرید با ستاره
+// دریافت سفارش‌های یک کاربر مشخص
+app.get('/api/user/orders', (req, res) => {
+    const userId = Number(req.query.userId);
+    const db = getDB();
+    const userOrders = (db.orders || []).filter(o => o.userId === userId);
+    res.json(userOrders);
+});
+
+// خرید محصول با ستاره
 app.post('/api/buy', (req, res) => {
     const { userId, productId } = req.body;
     const db = getDB();
@@ -122,24 +127,25 @@ app.post('/api/buy', (req, res) => {
         date: new Date().toLocaleDateString('fa-IR')
     };
 
+    if(!db.orders) db.orders = [];
     db.orders.push(newOrder);
     saveDB(db);
 
     res.json({ message: 'خرید با موفقیت انجام شد.', remainingStars: user.stars });
 });
 
-// ---------------- ای‌پی‌آی‌های مدیریت ----------------
+// ---------------- ای‌پی‌آی‌های پنل مدیریت ----------------
 
 app.get('/api/admin/data', (req, res) => {
     const db = getDB();
     res.json({
-        users: db.users,
-        products: db.products,
-        orders: db.orders,
+        users: db.users || [],
+        products: db.products || [],
+        orders: db.orders || [],
         stats: {
-            totalUsers: db.users.length,
-            totalProducts: db.products.length,
-            totalOrders: db.orders.length
+            totalUsers: (db.users || []).length,
+            totalProducts: (db.products || []).length,
+            totalOrders: (db.orders || []).length
         }
     });
 });
@@ -175,6 +181,8 @@ app.post('/api/admin/add-product', (req, res) => {
     if(!name || !price) return res.status(400).json({ error: 'نام و قیمت الزامی است.' });
 
     const db = getDB();
+    if(!db.products) db.products = [];
+
     const newProduct = {
         id: Date.now(),
         name,
@@ -190,7 +198,7 @@ app.post('/api/admin/add-product', (req, res) => {
 app.post('/api/admin/delete-product', (req, res) => {
     const { productId } = req.body;
     const db = getDB();
-    db.products = db.products.filter(p => p.id !== productId);
+    db.products = (db.products || []).filter(p => p.id !== productId);
     saveDB(db);
     res.json({ message: 'محصول حذف شد.' });
 });
@@ -198,7 +206,7 @@ app.post('/api/admin/delete-product', (req, res) => {
 app.post('/api/admin/update-order-status', (req, res) => {
     const { orderId, status } = req.body;
     const db = getDB();
-    const order = db.orders.find(o => o.id === orderId);
+    const order = (db.orders || []).find(o => o.id === orderId);
     if (order) {
         order.status = status;
         saveDB(db);
