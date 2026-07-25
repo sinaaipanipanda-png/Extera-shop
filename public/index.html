@@ -4,58 +4,179 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>فروشگاه ستاره‌ای</title>
+    <!-- اتصال به فونت وزیرمتن -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
-        * { box-sizing: border-box; font-family: Tahoma, Arial, sans-serif; }
-        body { background-color: #f0f2f5; margin: 0; padding: 15px; text-align: center; color: #333; }
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); max-width: 500px; margin: 15px auto; text-align: right; }
-        h2, h3 { text-align: center; color: #2c3e50; margin-top: 0; }
-        input, button, textarea { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ccc; font-size: 14px; }
-        button { background-color: #28a745; color: white; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        button:hover { opacity: 0.9; }
-        .btn-blue { background-color: #007bff; }
-        .btn-danger { background-color: #dc3545; }
-        .btn-warning { background-color: #ffc107; color: #212529; }
+        * { box-sizing: border-box; font-family: 'Vazirmatn', sans-serif; }
+        
+        body { 
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%); 
+            min-height: 100vh;
+            margin: 0; 
+            padding: 20px 10px; 
+            text-align: center; 
+            color: #f8fafc; 
+        }
+
+        /* استایل کارت‌های شیشه‌ای (گلس‌مورفیسم) */
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.08); 
+            backdrop-filter: blur(16px); 
+            -webkit-backdrop-filter: blur(16px); 
+            border: 1px solid rgba(255, 255, 255, 0.18); 
+            border-radius: 20px; 
+            padding: 25px; 
+            max-width: 500px; 
+            margin: 20px auto; 
+            text-align: right; 
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        h2, h3 { text-align: center; color: #ffffff; margin-top: 0; font-weight: 700; }
+        
+        input, button, textarea { 
+            width: 100%; 
+            padding: 12px 16px; 
+            margin: 10px 0; 
+            border-radius: 12px; 
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+            font-size: 14px; 
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input::placeholder { color: #94a3b8; }
+        
+        input:focus {
+            border-color: #38bdf8;
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+        }
+
+        button { 
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+            color: white; 
+            border: none; 
+            cursor: pointer; 
+            font-weight: 700; 
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        button:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+        }
+
+        .btn-blue { 
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); 
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-danger { 
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); 
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-warning { 
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); 
+            color: #ffffff; 
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+
         .hidden { display: none; }
-        .star-badge { background: #fff3cd; color: #856404; padding: 6px 14px; border-radius: 20px; font-weight: bold; display: inline-block; }
-        .item-box { border: 1px solid #e9ecef; background: #fafafa; padding: 12px; border-radius: 8px; margin-bottom: 10px; }
-        .item-box img { width: 100%; max-height: 150px; object-fit: cover; border-radius: 6px; }
-        .flex-btn { display: flex; gap: 5px; margin-top: 5px; }
+
+        .star-badge { 
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); 
+            color: #1e1b4b; 
+            padding: 8px 18px; 
+            border-radius: 30px; 
+            font-weight: 800; 
+            display: inline-block; 
+            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
+        }
+
+        .glass-item { 
+            background: rgba(255, 255, 255, 0.05); 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            padding: 15px; 
+            border-radius: 14px; 
+            margin-bottom: 12px; 
+        }
+
+        .glass-item img { 
+            width: 100%; 
+            max-height: 160px; 
+            object-fit: cover; 
+            border-radius: 10px; 
+        }
+
+        .flex-btn { display: flex; gap: 6px; margin-top: 8px; }
         .flex-btn button { flex: 1; padding: 8px; font-size: 12px; }
-        .stats-box { background: #e8f4f8; padding: 10px; border-radius: 8px; text-align: center; font-size: 13px; font-weight: bold; margin-bottom: 15px; }
+
+        .stats-box { 
+            background: rgba(56, 189, 248, 0.1); 
+            border: 1px solid rgba(56, 189, 248, 0.2); 
+            padding: 12px; 
+            border-radius: 12px; 
+            text-align: center; 
+            font-size: 13px; 
+            font-weight: 700; 
+            margin-bottom: 18px; 
+            color: #38bdf8;
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-pending { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
+        .status-success { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
+        .status-rejected { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
     </style>
 </head>
 <body>
 
     <!-- صفحه ورود و ثبت نام -->
-    <div id="auth-section" class="card">
+    <div id="auth-section" class="glass-card">
         <h2 id="auth-title">ورود به حساب</h2>
         <input type="text" id="username" placeholder="نام کاربری">
         <input type="password" id="password" placeholder="رمز عبور">
         <button onclick="login()">ورود</button>
         <button class="btn-blue" onclick="register()">ثبت‌نام (۱۰ ستاره هدیه)</button>
-        <p id="auth-msg" style="color: red; text-align: center;"></p>
+        <p id="auth-msg" style="color: #f87171; text-align: center; font-weight: bold; line-height: 1.6;"></p>
     </div>
 
     <!-- پنل کاربر عادی -->
-    <div id="user-section" class="card hidden">
+    <div id="user-section" class="glass-card hidden">
         <h2>خوش آمدید <span id="user-name"></span> 👋</h2>
-        <div style="text-align: center; margin-bottom: 15px;">
+        <div style="text-align: center; margin-bottom: 18px;">
             موجودی حساب: <span id="user-stars" class="star-badge">0 ⭐</span>
         </div>
         <button class="btn-danger" onclick="logout()">خروج از حساب</button>
 
-        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+        <hr style="margin: 25px 0; border: 0; border-top: 1px solid rgba(255,255,255,0.1);">
         <h3>🛍 فروشگاه محصولات</h3>
         <div id="products-list"></div>
+
+        <hr style="margin: 25px 0; border: 0; border-top: 1px solid rgba(255,255,255,0.1);">
+        <h3>📦 سفارش‌های من</h3>
+        <div id="user-orders-list"></div>
     </div>
 
     <!-- پنل مدیریت (ادمین) -->
-    <div id="admin-section" class="card hidden" style="max-width: 650px;">
+    <div id="admin-section" class="glass-card hidden" style="max-width: 650px;">
         <h2>⚙️ پنل مدیریت</h2>
         <div id="admin-stats" class="stats-box">در حال بارگذاری آمار...</div>
         <button class="btn-danger" onclick="logout()">خروج از پنل مدیریت</button>
 
-        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+        <hr style="margin: 25px 0; border: 0; border-top: 1px solid rgba(255,255,255,0.1);">
         <h3>➕ افزودن محصول جدید</h3>
         <input type="text" id="prod-name" placeholder="نام محصول">
         <input type="number" id="prod-price" placeholder="قیمت (تعداد ستاره)">
@@ -63,13 +184,13 @@
         <input type="text" id="prod-img" placeholder="لینک تصویر محصول (اختیاری)">
         <button onclick="addProduct()">افزودن به فروشگاه</button>
 
-        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+        <hr style="margin: 25px 0; border: 0; border-top: 1px solid rgba(255,255,255,0.1);">
         <h3>👥 مدیریت کاربران و ستاره‌ها</h3>
         <input type="text" id="search-user" placeholder="🔍 جستجوی نام کاربر..." onkeyup="filterUsers()">
         <div id="admin-users"></div>
 
-        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
-        <h3>📦 لیست سفارش‌ها</h3>
+        <hr style="margin: 25px 0; border: 0; border-top: 1px solid rgba(255,255,255,0.1);">
+        <h3>📦 مدیریت تمام سفارش‌ها</h3>
         <div id="admin-orders"></div>
     </div>
 
@@ -115,6 +236,7 @@
                     document.getElementById('user-name').innerText = currentUser.username;
                     document.getElementById('user-stars').innerText = currentUser.stars + ' ⭐';
                     loadProducts();
+                    loadUserOrders();
                 }
             } else {
                 document.getElementById('auth-msg').innerText = data.error;
@@ -127,19 +249,45 @@
             const container = document.getElementById('products-list');
             container.innerHTML = '';
 
-            if(products.length === 0) {
-                container.innerHTML = '<p style="text-align:center;">محصولی برای نمایش وجود ندارد.</p>';
+            if(!products || products.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#94a3b8;">هنوز محصولی توسط مدیر اضافه نشده است.</p>';
                 return;
             }
 
             products.forEach(p => {
                 container.innerHTML += `
-                    <div class="item-box">
+                    <div class="glass-item">
                         <img src="${p.image}" alt="${p.name}">
-                        <h4 style="margin: 8px 0;">${p.name}</h4>
-                        <p style="font-size: 13px; color: #666; margin: 4px 0;">${p.description}</p>
-                        <p>قیمت: <b style="color:#d97706;">${p.price} ستاره</b></p>
+                        <h4 style="margin: 8px 0; font-size: 16px;">${p.name}</h4>
+                        <p style="font-size: 13px; color: #cbd5e1; margin: 4px 0;">${p.description}</p>
+                        <p style="margin: 8px 0;">قیمت: <b style="color:#fbbf24;">${p.price} ستاره</b></p>
                         <button onclick="buyProduct(${p.id})">خرید این محصول</button>
+                    </div>
+                `;
+            });
+        }
+
+        async function loadUserOrders() {
+            const res = await fetch(`/api/user/orders?userId=${currentUser.id}`);
+            const orders = await res.json();
+            const container = document.getElementById('user-orders-list');
+            container.innerHTML = '';
+
+            if(!orders || orders.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#94a3b8;">شما هنوز هیچ سفارشی ثبت نکرده‌اید.</p>';
+                return;
+            }
+
+            orders.forEach(o => {
+                let badgeClass = 'status-pending';
+                if(o.status === 'تحویل شد') badgeClass = 'status-success';
+                if(o.status === 'رد شد') badgeClass = 'status-rejected';
+
+                container.innerHTML += `
+                    <div class="glass-item">
+                        <b>محصول:</b> ${o.productName} (${o.price} ستاره)<br>
+                        <b>تاریخ:</b> ${o.date} <br>
+                        <b>وضعیت:</b> <span class="status-badge ${badgeClass}">${o.status}</span>
                     </div>
                 `;
             });
@@ -158,6 +306,7 @@
             if (res.ok) {
                 currentUser.stars = data.remainingStars;
                 document.getElementById('user-stars').innerText = currentUser.stars + ' ⭐';
+                loadUserOrders();
             }
         }
 
@@ -167,23 +316,26 @@
             const data = await res.json();
 
             document.getElementById('admin-stats').innerHTML = 
-                `تعداد کاربران: ${data.stats.totalUsers} نفر | محصولات: ${data.stats.totalProducts} عدد | سفارش‌ها: ${data.stats.totalOrders} عدد`;
+                `کاربران: ${data.stats.totalUsers} نفر | محصولات: ${data.stats.totalProducts} عدد | سفارش‌ها: ${data.stats.totalOrders} عدد`;
 
-            allUsersCache = data.users;
+            allUsersCache = data.users || [];
             renderUsers(allUsersCache);
 
-            // لیست سفارش‌ها
             const ordersDiv = document.getElementById('admin-orders');
             ordersDiv.innerHTML = '';
-            if(data.orders.length === 0) ordersDiv.innerHTML = '<p style="text-align:center;">سفارشی ثبت نشده است.</p>';
+            if(!data.orders || data.orders.length === 0) ordersDiv.innerHTML = '<p style="text-align:center; color:#94a3b8;">سفارشی ثبت نشده است.</p>';
 
             data.orders.forEach(o => {
+                let badgeClass = 'status-pending';
+                if(o.status === 'تحویل شد') badgeClass = 'status-success';
+                if(o.status === 'رد شد') badgeClass = 'status-rejected';
+
                 ordersDiv.innerHTML += `
-                    <div class="item-box">
+                    <div class="glass-item">
                         <b>کاربر:</b> ${o.username} <br>
                         <b>محصول:</b> ${o.productName} (${o.price} ستاره)<br>
                         <b>تاریخ:</b> ${o.date} <br>
-                        <b>وضعیت فعلی:</b> <span style="color:blue;">${o.status}</span>
+                        <b>وضعیت فعلی:</b> <span class="status-badge ${badgeClass}">${o.status}</span>
                         <div class="flex-btn">
                             <button onclick="changeOrderStatus(${o.id}, 'تحویل شد')">✅ تحویل شد</button>
                             <button class="btn-danger" onclick="changeOrderStatus(${o.id}, 'رد شد')">❌ رد شد</button>
@@ -199,9 +351,9 @@
             users.forEach(u => {
                 if(!u.isAdmin) {
                     usersDiv.innerHTML += `
-                        <div class="item-box">
+                        <div class="glass-item">
                             <b>نام کاربر:</b> ${u.username} | <b>موجودی:</b> ${u.stars} ⭐<br>
-                            <b>وضعیت:</b> ${u.isBanned ? '<span style="color:red;">🚫 بن شده</span>' : '<span style="color:green;">✅ فعال</span>'}
+                            <b>وضعیت:</b> ${u.isBanned ? '<span style="color:#f87171;">🚫 بن شده</span>' : '<span style="color:#34d399;">✅ فعال</span>'}
                             <div class="flex-btn">
                                 <button onclick="updateStars(${u.id}, 5)">+5 ⭐</button>
                                 <button class="btn-warning" onclick="updateStars(${u.id}, -5)">-5 ⭐</button>
@@ -272,4 +424,4 @@
         }
     </script>
 </body>
-  </html>
+            </html>
