@@ -19,7 +19,8 @@ if (!fs.existsSync(DB_FILE)) {
         ],
         products: [],
         orders: [],
-        tickets: []
+        tickets: [],
+        announcements: []
     };
     try {
         fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2));
@@ -29,13 +30,14 @@ if (!fs.existsSync(DB_FILE)) {
 function getDB() {
     try {
         if (!fs.existsSync(DB_FILE)) {
-            return { users: [{ id: 1, username: 'admin', password: '123', stars: 999, isBanned: false, isAdmin: true }], products: [], orders: [], tickets: [] };
+            return { users: [{ id: 1, username: 'admin', password: '123', stars: 999, isBanned: false, isAdmin: true }], products: [], orders: [], tickets: [], announcements: [] };
         }
         const data = JSON.parse(fs.readFileSync(DB_FILE));
         if(!data.tickets) data.tickets = [];
+        if(!data.announcements) data.announcements = [];
         return data;
     } catch (e) {
-        return { users: [], products: [], orders: [], tickets: [] };
+        return { users: [], products: [], orders: [], tickets: [], announcements: [] };
     }
 }
 
@@ -96,6 +98,12 @@ app.post('/api/login', (req, res) => {
 app.get('/api/products', (req, res) => {
     const db = getDB();
     res.json(db.products || []);
+});
+
+// دریافت اطلاعیه‌ها
+app.get('/api/announcements', (req, res) => {
+    const db = getDB();
+    res.json(db.announcements || []);
 });
 
 // دریافت سفارش‌های یک کاربر
@@ -186,6 +194,22 @@ app.get('/api/user/tickets', (req, res) => {
 
 // ---------------- ای‌پی‌آی‌های مدیریت ----------------
 
+// گرفتن کپی (بکاپ) از دیتابیس
+app.get('/api/admin/backup', (req, res) => {
+    const db = getDB();
+    res.json(db);
+});
+
+// پیست و بازگردانی (رستور) دیتابیس
+app.post('/api/admin/restore', (req, res) => {
+    const { backupData } = req.body;
+    if(!backupData || !backupData.users) {
+        return res.status(400).json({ error: 'اطلاعات بکاپ معتبر نیست.' });
+    }
+    saveDB(backupData);
+    res.json({ message: 'اطلاعات با موفقیت بازگردانی و پیست شد!' });
+});
+
 app.get('/api/admin/data', (req, res) => {
     const db = getDB();
     res.json({
@@ -193,13 +217,59 @@ app.get('/api/admin/data', (req, res) => {
         products: db.products || [],
         orders: db.orders || [],
         tickets: db.tickets || [],
+        announcements: db.announcements || [],
         stats: {
             totalUsers: (db.users || []).length,
             totalProducts: (db.products || []).length,
             totalOrders: (db.orders || []).length,
-            totalTickets: (db.tickets || []).length
+            totalTickets: (db.tickets || []).length,
+            totalAnnouncements: (db.announcements || []).length
         }
     });
+});
+
+app.post('/api/admin/announcements', (req, res) => {
+    const { title, content } = req.body;
+    if(!title || !content) return res.status(400).json({ error: 'عنوان و متن اطلاعیه الزامی است.' });
+
+    const db = getDB();
+    if(!db.announcements) db.announcements = [];
+
+    const newAnno = {
+        id: Date.now(),
+        title,
+        content,
+        date: new Date().toLocaleDateString('fa-IR')
+    };
+
+    db.announcements.push(newAnno);
+    saveDB(db);
+
+    res.json({ message: 'اطلاعیه با موفقیت منتشر شد.' });
+});
+
+app.post('/api/admin/delete-announcement', (req, res) => {
+    const { id } = req.body;
+    const db = getDB();
+    db.announcements = (db.announcements || []).filter(a => a.id !== id);
+    saveDB(db);
+    res.json({ message: 'اطلاعیه حذف شد.' });
+});
+
+app.post('/api/admin/delete-user', (req, res) => {
+    const { userId } = req.body;
+    const db = getDB();
+    db.users = (db.users || []).filter(u => u.id !== userId);
+    saveDB(db);
+    res.json({ message: 'عضویت کاربر با موفقیت لغو و حسابش حذف گردید.' });
+});
+
+app.post('/api/admin/close-ticket', (req, res) => {
+    const { ticketId } = req.body;
+    const db = getDB();
+    db.tickets = (db.tickets || []).filter(t => t.id !== ticketId);
+    saveDB(db);
+    res.json({ message: 'تیکت بسته شد و از سیستم حذف گردید.' });
 });
 
 app.post('/api/admin/update-stars', (req, res) => {
@@ -268,7 +338,6 @@ app.post('/api/admin/update-order-status', (req, res) => {
     }
 });
 
-// حذف سفارش توسط ادمین
 app.post('/api/admin/delete-order', (req, res) => {
     const { orderId } = req.body;
     const db = getDB();
@@ -277,7 +346,6 @@ app.post('/api/admin/delete-order', (req, res) => {
     res.json({ message: 'سفارش با موفقیت حذف شد.' });
 });
 
-// پاسخ به تیکت توسط ادمین
 app.post('/api/admin/reply-ticket', (req, res) => {
     const { ticketId, reply, status } = req.body;
     const db = getDB();
