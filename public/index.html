@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>فروشگاه ستاره‌ای</title>
-    <!-- اتصال به فونت وزیرمتن -->
+    <title>فروشگاه هوش مدرن</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;700;800&display=swap" rel="stylesheet">
@@ -21,7 +20,6 @@
             color: #f8fafc; 
         }
 
-        /* استایل کارت‌های شیشه‌ای (گلس‌مورفیسم) */
         .glass-card { 
             background: rgba(255, 255, 255, 0.08); 
             backdrop-filter: blur(16px); 
@@ -29,11 +27,98 @@
             border: 1px solid rgba(255, 255, 255, 0.18); 
             border-radius: 20px; 
             padding: 25px; 
-            max-width: 500px; 
+            max-width: 550px; 
             margin: 20px auto; 
             text-align: right; 
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            position: relative;
         }
+
+        .brand-header {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+
+        /* منوی همبرگری کشویی شیشه‌ای */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .hamburger-btn {
+            font-size: 26px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 4px 12px;
+            border-radius: 10px;
+            color: white;
+            transition: 0.3s;
+        }
+        .hamburger-btn:hover { background: rgba(255, 255, 255, 0.25); }
+
+        .drawer-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 99;
+            display: none;
+        }
+
+        .drawer-menu {
+            position: fixed;
+            top: 0; right: -280px;
+            width: 280px; height: 100vh;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(255, 255, 255, 0.15);
+            z-index: 100;
+            padding: 20px;
+            box-shadow: -5px 0 25px rgba(0,0,0,0.5);
+            transition: right 0.3s ease;
+            text-align: right;
+        }
+
+        .drawer-menu.open { right: 0; }
+
+        .drawer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+
+        .drawer-close {
+            cursor: pointer;
+            font-size: 20px;
+            color: #f87171;
+            font-weight: bold;
+        }
+
+        .drawer-item {
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+        .drawer-item:hover { background: rgba(56, 189, 248, 0.2); border-color: #38bdf8; }
 
         h2, h3 { text-align: center; color: #ffffff; margin-top: 0; font-weight: 700; }
         
@@ -50,9 +135,9 @@
             transition: all 0.3s ease;
         }
 
-        input::placeholder { color: #94a3b8; }
+        input::placeholder, textarea::placeholder { color: #94a3b8; }
         
-        input:focus {
+        input:focus, textarea:focus {
             border-color: #38bdf8;
             background: rgba(255, 255, 255, 0.12);
             box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
@@ -90,15 +175,18 @@
 
         .hidden { display: none; }
 
-        .star-badge { 
-            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); 
-            color: #1e1b4b; 
-            padding: 8px 18px; 
-            border-radius: 30px; 
-            font-weight: 800; 
-            display: inline-block; 
-            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
+        /* موجودی ستاره بزرگ */
+        .big-star-box {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.25) 100%);
+            border: 2px solid #fbbf24;
+            padding: 18px;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 25px;
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.2);
         }
+        .big-star-title { font-size: 14px; color: #fef08a; font-weight: bold; }
+        .big-star-count { font-size: 32px; color: #fbbf24; font-weight: 800; text-shadow: 0 0 10px rgba(251, 191, 36, 0.5); }
 
         .glass-item { 
             background: rgba(255, 255, 255, 0.05); 
@@ -143,60 +231,202 @@
 </head>
 <body>
 
+    <div id="drawer-overlay" class="drawer-overlay" onclick="closeDrawer()"></div>
+
+    <!-- منوی کشویی کاربر -->
+    <div id="user-drawer" class="drawer-menu">
+        <div class="drawer-header">
+            <b>منوی کاربر</b>
+            <span class="drawer-close" onclick="closeDrawer()">✕</span>
+        </div>
+        <div class="drawer-item" onclick="switchUserTab('home')">🏠 صفحه اصلی</div>
+        <div class="drawer-item" onclick="switchUserTab('shop')">🛍 فروشگاه (خرید محصول)</div>
+        <div class="drawer-item" onclick="switchUserTab('profile')">👤 اطلاعات کاربری و ویرایش</div>
+        <div class="drawer-item" onclick="switchUserTab('orders')">📦 مدیریت سفارش‌های ثبت شده</div>
+        <div class="drawer-item" onclick="switchUserTab('tickets')">💬 ارتباط با پشتیبانی (تیکت)</div>
+        <div style="margin-top: 30px;">
+            <button class="btn-danger" onclick="logout()">خروج از حساب</button>
+        </div>
+    </div>
+
+    <!-- منوی کشویی ادمین -->
+    <div id="admin-drawer" class="drawer-menu">
+        <div class="drawer-header">
+            <b>منوی مدیریت</b>
+            <span class="drawer-close" onclick="closeDrawer()">✕</span>
+        </div>
+        <div class="drawer-item" onclick="switchAdminTab('home')">🏠 صفحه اصلی</div>
+        <div class="drawer-item" onclick="switchAdminTab('products')">🛍 مدیریت محصولات</div>
+        <div class="drawer-item" onclick="switchAdminTab('users')">👥 مدیریت کاربران</div>
+        <div class="drawer-item" onclick="switchAdminTab('orders')">📦 مدیریت سفارش‌ها</div>
+        <div class="drawer-item" onclick="switchAdminTab('tickets')">💬 مدیریت تیکت‌ها</div>
+        <div style="margin-top: 30px;">
+            <button class="btn-danger" onclick="logout()">خروج از حساب ادمین</button>
+        </div>
+    </div>
+
     <!-- صفحه ورود و ثبت نام -->
     <div id="auth-section" class="glass-card">
-        <h2 id="auth-title">ورود به حساب</h2>
+        <div class="brand-header">🧠 فروشگاه هوش مدرن</div>
+        <h2 id="auth-title">ورود به حساب کاربری</h2>
         <input type="text" id="username" placeholder="نام کاربری">
         <input type="password" id="password" placeholder="رمز عبور">
-        <button onclick="login()">ورود</button>
+        <button onclick="login()">ورود به فروشگاه</button>
         <button class="btn-blue" onclick="register()">ثبت‌نام (۱۰ ستاره هدیه)</button>
         <p id="auth-msg" style="color: #f87171; text-align: center; font-weight: bold; line-height: 1.6;"></p>
     </div>
 
-    <!-- پنل کاربر عادی -->
+    <!-- پنل اصلی کاربر -->
     <div id="user-section" class="glass-card hidden">
-        <h2>خوش آمدید <span id="user-name"></span> 👋</h2>
-        <div style="text-align: center; margin-bottom: 18px;">
-            موجودی حساب: <span id="user-stars" class="star-badge">0 ⭐</span>
+        <div class="top-bar">
+            <span class="hamburger-btn" onclick="openUserDrawer()">☰</span>
+            <div class="brand-header" style="margin:0; font-size:18px;">هوش مدرن</div>
         </div>
-        <button class="btn-danger" onclick="logout()">خروج از حساب</button>
 
-        <hr style="margin: 25px 0; border: 0; border-top: 1px solid rgba(255,255,255,0.1);">
-        <h3>🛍 فروشگاه محصولات</h3>
-        <div id="products-list"></div>
+        <!-- تب ۱: صفحه خانه کاربر -->
+        <div id="tab-user-home">
+            <h2 style="margin-top: 20px;">سلام <span id="user-name-welcome"></span> گرامی! 👋</h2>
+            <p style="text-align: center; color: #cbd5e1; font-size: 16px; margin: 25px 0;">با منوی همبرگری (بالا سمت راست) ادامه دهید..</p>
+        </div>
 
-        <hr style="margin: 25px 0; border: 0; border-top: 1px solid rgba(255,255,255,0.1);">
-        <h3>📦 سفارش‌های من</h3>
-        <div id="user-orders-list"></div>
+        <!-- تب ۲: فروشگاه -->
+        <div id="tab-user-shop" class="hidden">
+            <div class="big-star-box">
+                <div class="big-star-title">⭐ موجودی ستاره شما ⭐</div>
+                <div id="user-stars-big" class="big-star-count">0 ستاره</div>
+            </div>
+            <h3>🛍 فروشگاه محصولات</h3>
+            <div id="products-list"></div>
+        </div>
+
+        <!-- تب ۳: پروفایل و ویرایش -->
+        <div id="tab-user-profile" class="hidden">
+            <h3>👤 اطلاعات کاربری</h3>
+            <div class="glass-item">
+                <p><b>نام کاربری:</b> <span id="profile-username"></span></p>
+                <p><b>موجودی ستاره:</b> <span id="profile-stars"></span> ⭐</p>
+            </div>
+            <h3>🔒 تغییر رمز عبور</h3>
+            <input type="password" id="new-password" placeholder="رمز عبور جدید">
+            <button class="btn-blue" onclick="updatePassword()">تغییر رمز عبور</button>
+        </div>
+
+        <!-- تب ۴: سفارش‌های کاربر -->
+        <div id="tab-user-orders" class="hidden">
+            <h3>📦 مدیریت سفارش‌های ثبت شده</h3>
+            <div id="user-orders-list"></div>
+        </div>
+
+        <!-- تب ۵: پشتیبانی تیکت -->
+        <div id="tab-user-tickets" class="hidden">
+            <h3>💬 ارتباط با پشتیبانی (تیکت)</h3>
+            <input type="text" id="ticket-title" placeholder="عنوان تیکت">
+            <textarea id="ticket-message" rows="4" placeholder="متن پیام شما..."></textarea>
+            <button onclick="sendTicket()">ارسال تیکت به پشتیبانی</button>
+
+            <hr style="margin: 20px 0; border:0; border-top: 1px solid rgba(255,255,255,0.1);">
+            <h3>تیکت‌های قبلی شما</h3>
+            <div id="user-tickets-list"></div>
+        </div>
     </div>
 
-    <!-- پنل مدیریت (ادمین) -->
+    <!-- پنل اصلی مدیریت (ادمین) -->
     <div id="admin-section" class="glass-card hidden" style="max-width: 650px;">
-        <h2>⚙️ پنل مدیریت</h2>
-        <div id="admin-stats" class="stats-box">در حال بارگذاری آمار...</div>
-        <button class="btn-danger" onclick="logout()">خروج از پنل مدیریت</button>
+        <div class="top-bar">
+            <span class="hamburger-btn" onclick="openAdminDrawer()">☰</span>
+            <div class="brand-header" style="margin:0; font-size:18px;">مدیریت هوش مدرن</div>
+        </div>
 
-        <hr style="margin: 25px 0; border: 0; border-top: 1px solid rgba(255,255,255,0.1);">
-        <h3>➕ افزودن محصول جدید</h3>
-        <input type="text" id="prod-name" placeholder="نام محصول">
-        <input type="number" id="prod-price" placeholder="قیمت (تعداد ستاره)">
-        <input type="text" id="prod-desc" placeholder="توضیحات محصول">
-        <input type="text" id="prod-img" placeholder="لینک تصویر محصول (اختیاری)">
-        <button onclick="addProduct()">افزودن به فروشگاه</button>
+        <!-- تب ۱: صفحه خانه ادمین -->
+        <div id="tab-admin-home">
+            <h2 style="margin-top: 20px;">سلام ادمین گرامی! 👋</h2>
+            <p style="text-align: center; color: #cbd5e1; font-size: 16px; margin: 25px 0;">با منوی همبرگری (بالا سمت راست) ادامه دهید..</p>
+            <div id="admin-stats" class="stats-box">در حال بارگذاری آمار...</div>
+        </div>
 
-        <hr style="margin: 25px 0; border: 0; border-top: 1px solid rgba(255,255,255,0.1);">
-        <h3>👥 مدیریت کاربران و ستاره‌ها</h3>
-        <input type="text" id="search-user" placeholder="🔍 جستجوی نام کاربر..." onkeyup="filterUsers()">
-        <div id="admin-users"></div>
+        <!-- تب ۲: مدیریت محصولات -->
+        <div id="tab-admin-products" class="hidden">
+            <h3>➕ افزودن محصول جدید</h3>
+            <input type="text" id="prod-name" placeholder="نام محصول">
+            <input type="number" id="prod-price" placeholder="قیمت (تعداد ستاره)">
+            <input type="text" id="prod-desc" placeholder="توضیحات محصول">
+            <input type="text" id="prod-img" placeholder="لینک تصویر محصول (اختیاری)">
+            <button onclick="addProduct()">افزودن به فروشگاه</button>
 
-        <hr style="margin: 25px 0; border: 0; border-top: 1px solid rgba(255,255,255,0.1);">
-        <h3>📦 مدیریت تمام سفارش‌ها</h3>
-        <div id="admin-orders"></div>
+            <hr style="margin: 20px 0; border:0; border-top: 1px solid rgba(255,255,255,0.1);">
+            <h3>🛍 لیست محصولات فعلی</h3>
+            <div id="admin-products-list"></div>
+        </div>
+
+        <!-- تب ۳: مدیریت کاربران -->
+        <div id="tab-admin-users" class="hidden">
+            <h3>👥 مدیریت کاربران و ستاره‌ها</h3>
+            <input type="text" id="search-user" placeholder="🔍 جستجوی نام کاربر..." onkeyup="filterUsers()">
+            <div id="admin-users"></div>
+        </div>
+
+        <!-- تب ۴: مدیریت سفارش‌ها -->
+        <div id="tab-admin-orders" class="hidden">
+            <h3>📦 مدیریت کامل سفارش‌ها</h3>
+            <div id="admin-orders"></div>
+        </div>
+
+        <!-- تب ۵: مدیریت تیکت‌ها -->
+        <div id="tab-admin-tickets" class="hidden">
+            <h3>💬 مدیریت تیکت‌های پشتیبانی</h3>
+            <div id="admin-tickets-list"></div>
+        </div>
     </div>
 
     <script>
         let currentUser = null;
         let allUsersCache = [];
+
+        function openUserDrawer() {
+            document.getElementById('drawer-overlay').style.display = 'block';
+            document.getElementById('user-drawer').classList.add('open');
+        }
+
+        function openAdminDrawer() {
+            document.getElementById('drawer-overlay').style.display = 'block';
+            document.getElementById('admin-drawer').classList.add('open');
+        }
+
+        function closeDrawer() {
+            document.getElementById('drawer-overlay').style.display = 'none';
+            document.getElementById('user-drawer').classList.remove('open');
+            document.getElementById('admin-drawer').classList.remove('open');
+        }
+
+        function switchUserTab(tab) {
+            closeDrawer();
+            document.getElementById('tab-user-home').classList.add('hidden');
+            document.getElementById('tab-user-shop').classList.add('hidden');
+            document.getElementById('tab-user-profile').classList.add('hidden');
+            document.getElementById('tab-user-orders').classList.add('hidden');
+            document.getElementById('tab-user-tickets').classList.add('hidden');
+
+            if(tab === 'home') document.getElementById('tab-user-home').classList.remove('hidden');
+            if(tab === 'shop') { document.getElementById('tab-user-shop').classList.remove('hidden'); loadProducts(); }
+            if(tab === 'profile') { document.getElementById('tab-user-profile').classList.remove('hidden'); loadProfile(); }
+            if(tab === 'orders') { document.getElementById('tab-user-orders').classList.remove('hidden'); loadUserOrders(); }
+            if(tab === 'tickets') { document.getElementById('tab-user-tickets').classList.remove('hidden'); loadUserTickets(); }
+        }
+
+        function switchAdminTab(tab) {
+            closeDrawer();
+            document.getElementById('tab-admin-home').classList.add('hidden');
+            document.getElementById('tab-admin-products').classList.add('hidden');
+            document.getElementById('tab-admin-users').classList.add('hidden');
+            document.getElementById('tab-admin-orders').classList.add('hidden');
+            document.getElementById('tab-admin-tickets').classList.add('hidden');
+
+            if(tab === 'home') { document.getElementById('tab-admin-home').classList.remove('hidden'); loadAdminData(); }
+            if(tab === 'products') { document.getElementById('tab-admin-products').classList.remove('hidden'); loadAdminProducts(); }
+            if(tab === 'users') { document.getElementById('tab-admin-users').classList.remove('hidden'); loadAdminData(); }
+            if(tab === 'orders') { document.getElementById('tab-admin-orders').classList.remove('hidden'); loadAdminData(); }
+            if(tab === 'tickets') { document.getElementById('tab-admin-tickets').classList.remove('hidden'); loadAdminTickets(); }
+        }
 
         async function register() {
             const u = document.getElementById('username').value.trim();
@@ -230,13 +460,12 @@
 
                 if (currentUser.isAdmin) {
                     document.getElementById('admin-section').classList.remove('hidden');
-                    loadAdminData();
+                    switchAdminTab('home');
                 } else {
                     document.getElementById('user-section').classList.remove('hidden');
-                    document.getElementById('user-name').innerText = currentUser.username;
-                    document.getElementById('user-stars').innerText = currentUser.stars + ' ⭐';
-                    loadProducts();
-                    loadUserOrders();
+                    document.getElementById('user-name-welcome').innerText = currentUser.username;
+                    document.getElementById('user-stars-big').innerText = currentUser.stars + ' ستاره';
+                    switchUserTab('home');
                 }
             } else {
                 document.getElementById('auth-msg').innerText = data.error;
@@ -249,8 +478,10 @@
             const container = document.getElementById('products-list');
             container.innerHTML = '';
 
+            document.getElementById('user-stars-big').innerText = currentUser.stars + ' ستاره';
+
             if(!products || products.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:#94a3b8;">هنوز محصولی توسط مدیر اضافه نشده است.</p>';
+                container.innerHTML = '<p style="text-align:center; color:#94a3b8;">هنوز محصولی در فروشگاه ثبت نشده است.</p>';
                 return;
             }
 
@@ -265,6 +496,25 @@
                     </div>
                 `;
             });
+        }
+
+        function loadProfile() {
+            document.getElementById('profile-username').innerText = currentUser.username;
+            document.getElementById('profile-stars').innerText = currentUser.stars;
+        }
+
+        async function updatePassword() {
+            const newPassword = document.getElementById('new-password').value.trim();
+            if(!newPassword) return alert('رمز عبور جدید را وارد کنید.');
+
+            const res = await fetch('/api/user/update-profile', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ userId: currentUser.id, newPassword })
+            });
+            const data = await res.json();
+            alert(data.message || data.error);
+            if(res.ok) document.getElementById('new-password').value = '';
         }
 
         async function loadUserOrders() {
@@ -293,6 +543,47 @@
             });
         }
 
+        async function sendTicket() {
+            const title = document.getElementById('ticket-title').value.trim();
+            const message = document.getElementById('ticket-message').value.trim();
+            if(!title || !message) return alert('عنوان و متن پیام را وارد کنید.');
+
+            const res = await fetch('/api/user/tickets', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ userId: currentUser.id, username: currentUser.username, title, message })
+            });
+            const data = await res.json();
+            alert(data.message || data.error);
+            if(res.ok) {
+                document.getElementById('ticket-title').value = '';
+                document.getElementById('ticket-message').value = '';
+                loadUserTickets();
+            }
+        }
+
+        async function loadUserTickets() {
+            const res = await fetch(`/api/user/tickets?userId=${currentUser.id}`);
+            const tickets = await res.json();
+            const container = document.getElementById('user-tickets-list');
+            container.innerHTML = '';
+
+            if(!tickets || tickets.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#94a3b8;">تیکتی ثبت نشده است.</p>';
+                return;
+            }
+
+            tickets.forEach(t => {
+                container.innerHTML += `
+                    <div class="glass-item">
+                        <b>عنوان:</b> ${t.title} <span class="status-badge status-pending" style="float:left;">${t.status}</span><br>
+                        <b>پیام شما:</b> ${t.message}<br>
+                        ${t.adminReply ? `<div style="background:rgba(56,189,248,0.15); padding:8px; border-radius:8px; margin-top:8px;"><b>پاسخ پشتیبانی:</b> ${t.adminReply}</div>` : ''}
+                    </div>
+                `;
+            });
+        }
+
         async function buyProduct(productId) {
             if(!confirm('آیا از خرید این محصول مطمئن هستید؟')) return;
 
@@ -305,18 +596,17 @@
             alert(data.message || data.error);
             if (res.ok) {
                 currentUser.stars = data.remainingStars;
-                document.getElementById('user-stars').innerText = currentUser.stars + ' ⭐';
-                loadUserOrders();
+                document.getElementById('user-stars-big').innerText = currentUser.stars + ' ستاره';
             }
         }
 
-        // توابع پنل مدیریت
+        // توابع ادمین
         async function loadAdminData() {
             const res = await fetch('/api/admin/data');
             const data = await res.json();
 
             document.getElementById('admin-stats').innerHTML = 
-                `کاربران: ${data.stats.totalUsers} نفر | محصولات: ${data.stats.totalProducts} عدد | سفارش‌ها: ${data.stats.totalOrders} عدد`;
+                `کاربران: ${data.stats.totalUsers} نفر | محصولات: ${data.stats.totalProducts} عدد | سفارش‌ها: ${data.stats.totalOrders} عدد | تیکت‌ها: ${data.stats.totalTickets} عدد`;
 
             allUsersCache = data.users || [];
             renderUsers(allUsersCache);
@@ -338,11 +628,71 @@
                         <b>وضعیت فعلی:</b> <span class="status-badge ${badgeClass}">${o.status}</span>
                         <div class="flex-btn">
                             <button onclick="changeOrderStatus(${o.id}, 'تحویل شد')">✅ تحویل شد</button>
-                            <button class="btn-danger" onclick="changeOrderStatus(${o.id}, 'رد شد')">❌ رد شد</button>
+                            <button class="btn-warning" onclick="changeOrderStatus(${o.id}, 'رد شد')">❌ رد شد</button>
+                            <button class="btn-danger" onclick="deleteOrder(${o.id})">🗑 حذف سفارش</button>
                         </div>
                     </div>
                 `;
             });
+        }
+
+        async function loadAdminProducts() {
+            const res = await fetch('/api/products');
+            const products = await res.json();
+            const container = document.getElementById('admin-products-list');
+            container.innerHTML = '';
+
+            if(!products || products.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#94a3b8;">محصولی وجود ندارد.</p>';
+                return;
+            }
+
+            products.forEach(p => {
+                container.innerHTML += `
+                    <div class="glass-item">
+                        <b>${p.name}</b> (${p.price} ستاره)
+                        <button class="btn-danger" style="margin-top:8px;" onclick="deleteProduct(${p.id})">حذف این محصول</button>
+                    </div>
+                `;
+            });
+        }
+
+        async function loadAdminTickets() {
+            const res = await fetch('/api/admin/data');
+            const data = await res.json();
+            const container = document.getElementById('admin-tickets-list');
+            container.innerHTML = '';
+
+            if(!data.tickets || data.tickets.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#94a3b8;">تیکتی ثبت نشده است.</p>';
+                return;
+            }
+
+            data.tickets.forEach(t => {
+                container.innerHTML += `
+                    <div class="glass-item">
+                        <b>کاربر:</b> ${t.username} | <b>عنوان:</b> ${t.title}<br>
+                        <b>متن تیکت:</b> ${t.message}<br>
+                        <b>پاسخ فعلی:</b> ${t.adminReply || 'بدون پاسخ'}<br>
+                        <input type="text" id="reply-input-${t.id}" placeholder="پاسخ ادمین..." value="${t.adminReply || ''}">
+                        <button onclick="replyTicket(${t.id})">ارسال پاسخ</button>
+                    </div>
+                `;
+            });
+        }
+
+        async function replyTicket(ticketId) {
+            const reply = document.getElementById(`reply-input-${ticketId}`).value.trim();
+            if(!reply) return alert('متن پاسخ را وارد کنید.');
+
+            const res = await fetch('/api/admin/reply-ticket', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ ticketId, reply, status: 'پاسخ داده شد' })
+            });
+            const data = await res.json();
+            alert(data.message || data.error);
+            if(res.ok) loadAdminTickets();
         }
 
         function renderUsers(users) {
@@ -407,7 +757,19 @@
             document.getElementById('prod-price').value = '';
             document.getElementById('prod-desc').value = '';
             document.getElementById('prod-img').value = '';
-            loadAdminData();
+            loadAdminProducts();
+        }
+
+        async function deleteProduct(productId) {
+            if(!confirm('آیا از حذف این محصول مطمئن هستید؟')) return;
+
+            await fetch('/api/admin/delete-product', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ productId })
+            });
+            alert('محصول حذف شد');
+            loadAdminProducts();
         }
 
         async function changeOrderStatus(orderId, status) {
@@ -419,9 +781,21 @@
             loadAdminData();
         }
 
+        async function deleteOrder(orderId) {
+            if(!confirm('آیا از حذف این سفارش مطمئن هستید؟')) return;
+
+            await fetch('/api/admin/delete-order', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ orderId })
+            });
+            alert('سفارش حذف شد.');
+            loadAdminData();
+        }
+
         function logout() {
             location.reload();
         }
     </script>
 </body>
-            </html>
+                                                                                </html>
