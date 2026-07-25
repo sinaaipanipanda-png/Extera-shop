@@ -44,7 +44,6 @@
             margin-bottom: 20px;
         }
 
-        /* منوی همبرگری کشویی شیشه‌ای */
         .top-bar {
             display: flex;
             justify-content: space-between;
@@ -52,8 +51,43 @@
             margin-bottom: 20px;
         }
 
+        .top-icons {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .bell-container {
+            position: relative;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-size: 20px;
+            transition: 0.3s;
+        }
+        .bell-container:hover { background: rgba(255, 255, 255, 0.25); }
+
+        .unread-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ef4444;
+            color: white;
+            font-size: 11px;
+            font-weight: 800;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
+        }
+
         .hamburger-btn {
-            font-size: 26px;
+            font-size: 24px;
             cursor: pointer;
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
@@ -117,6 +151,7 @@
             align-items: center;
             gap: 10px;
             font-weight: 600;
+            position: relative;
         }
         .drawer-item:hover { background: rgba(56, 189, 248, 0.2); border-color: #38bdf8; }
 
@@ -175,7 +210,6 @@
 
         .hidden { display: none; }
 
-        /* موجودی ستاره بزرگ */
         .big-star-box {
             background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.25) 100%);
             border: 2px solid #fbbf24;
@@ -203,8 +237,8 @@
             border-radius: 10px; 
         }
 
-        .flex-btn { display: flex; gap: 6px; margin-top: 8px; }
-        .flex-btn button { flex: 1; padding: 8px; font-size: 12px; }
+        .flex-btn { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+        .flex-btn button { flex: 1; min-width: 90px; padding: 8px; font-size: 12px; }
 
         .stats-box { 
             background: rgba(56, 189, 248, 0.1); 
@@ -240,6 +274,10 @@
             <span class="drawer-close" onclick="closeDrawer()">✕</span>
         </div>
         <div class="drawer-item" onclick="switchUserTab('home')">🏠 صفحه اصلی</div>
+        <div class="drawer-item" onclick="switchUserTab('announcements')">
+            📢 اطلاعیه‌ها 
+            <span id="drawer-unread-badge" class="unread-badge hidden">0</span>
+        </div>
         <div class="drawer-item" onclick="switchUserTab('shop')">🛍 فروشگاه (خرید محصول)</div>
         <div class="drawer-item" onclick="switchUserTab('profile')">👤 اطلاعات کاربری و ویرایش</div>
         <div class="drawer-item" onclick="switchUserTab('orders')">📦 مدیریت سفارش‌های ثبت شده</div>
@@ -256,6 +294,8 @@
             <span class="drawer-close" onclick="closeDrawer()">✕</span>
         </div>
         <div class="drawer-item" onclick="switchAdminTab('home')">🏠 صفحه اصلی</div>
+        <div class="drawer-item" onclick="switchAdminTab('backup')">💾 پشتیبان‌گیری و بازگردانی</div>
+        <div class="drawer-item" onclick="switchAdminTab('announcements')">📢 مدیریت اطلاعیه‌ها</div>
         <div class="drawer-item" onclick="switchAdminTab('products')">🛍 مدیریت محصولات</div>
         <div class="drawer-item" onclick="switchAdminTab('users')">👥 مدیریت کاربران</div>
         <div class="drawer-item" onclick="switchAdminTab('orders')">📦 مدیریت سفارش‌ها</div>
@@ -279,17 +319,26 @@
     <!-- پنل اصلی کاربر -->
     <div id="user-section" class="glass-card hidden">
         <div class="top-bar">
-            <span class="hamburger-btn" onclick="openUserDrawer()">☰</span>
+            <div class="top-icons">
+                <span class="hamburger-btn" onclick="openUserDrawer()">☰</span>
+                <div class="bell-container" onclick="switchUserTab('announcements')">
+                    🔔
+                    <span id="top-unread-badge" class="unread-badge hidden">0</span>
+                </div>
+            </div>
             <div class="brand-header" style="margin:0; font-size:18px;">هوش مدرن</div>
         </div>
 
-        <!-- تب ۱: صفحه خانه کاربر -->
         <div id="tab-user-home">
             <h2 style="margin-top: 20px;">سلام <span id="user-name-welcome"></span> گرامی! 👋</h2>
-            <p style="text-align: center; color: #cbd5e1; font-size: 16px; margin: 25px 0;">با منوی همبرگری (بالا سمت راست) ادامه دهید..</p>
+            <p style="text-align: center; color: #cbd5e1; font-size: 16px; margin: 25px 0;">با منوی همبرگری ادامه دهید..</p>
         </div>
 
-        <!-- تب ۲: فروشگاه -->
+        <div id="tab-user-announcements" class="hidden">
+            <h3>📢 اطلاعیه‌های مهم</h3>
+            <div id="user-announcements-list"></div>
+        </div>
+
         <div id="tab-user-shop" class="hidden">
             <div class="big-star-box">
                 <div class="big-star-title">⭐ موجودی ستاره شما ⭐</div>
@@ -299,7 +348,6 @@
             <div id="products-list"></div>
         </div>
 
-        <!-- تب ۳: پروفایل و ویرایش -->
         <div id="tab-user-profile" class="hidden">
             <h3>👤 اطلاعات کاربری</h3>
             <div class="glass-item">
@@ -311,13 +359,11 @@
             <button class="btn-blue" onclick="updatePassword()">تغییر رمز عبور</button>
         </div>
 
-        <!-- تب ۴: سفارش‌های کاربر -->
         <div id="tab-user-orders" class="hidden">
             <h3>📦 مدیریت سفارش‌های ثبت شده</h3>
             <div id="user-orders-list"></div>
         </div>
 
-        <!-- تب ۵: پشتیبانی تیکت -->
         <div id="tab-user-tickets" class="hidden">
             <h3>💬 ارتباط با پشتیبانی (تیکت)</h3>
             <input type="text" id="ticket-title" placeholder="عنوان تیکت">
@@ -333,18 +379,41 @@
     <!-- پنل اصلی مدیریت (ادمین) -->
     <div id="admin-section" class="glass-card hidden" style="max-width: 650px;">
         <div class="top-bar">
-            <span class="hamburger-btn" onclick="openAdminDrawer()">☰</span>
+            <div class="top-icons">
+                <span class="hamburger-btn" onclick="openAdminDrawer()">☰</span>
+            </div>
             <div class="brand-header" style="margin:0; font-size:18px;">مدیریت هوش مدرن</div>
         </div>
 
-        <!-- تب ۱: صفحه خانه ادمین -->
         <div id="tab-admin-home">
             <h2 style="margin-top: 20px;">سلام ادمین گرامی! 👋</h2>
-            <p style="text-align: center; color: #cbd5e1; font-size: 16px; margin: 25px 0;">با منوی همبرگری (بالا سمت راست) ادامه دهید..</p>
+            <p style="text-align: center; color: #cbd5e1; font-size: 16px; margin: 25px 0;">با منوی همبرگری ادامه دهید..</p>
             <div id="admin-stats" class="stats-box">در حال بارگذاری آمار...</div>
         </div>
 
-        <!-- تب ۲: مدیریت محصولات -->
+        <!-- تب پشتیبان‌گیری و بازگردانی ۱ کلیکی -->
+        <div id="tab-admin-backup" class="hidden">
+            <h3>💾 پشتیبان‌گیری و بازگردانی اطلاعات</h3>
+            <p style="font-size:13px; color:#cbd5e1;">قبل از آپدیت در گیت‌هاب روی دکمه زیر بزنید تا کدر بکاپ کپی شود:</p>
+            <button class="btn-blue" onclick="getBackup()">📋 دریافت و کپی فایل پشتیبان</button>
+            <textarea id="backup-text" rows="6" placeholder="کدر پشتیبان اینجا نمایش داده می‌شود..."></textarea>
+            
+            <hr style="margin: 20px 0; border:0; border-top: 1px solid rgba(255,255,255,0.1);">
+            <p style="font-size:13px; color:#cbd5e1;">بعد از آپدیت، متن کپی‌شده قبلی را اینجا پیست کنید و بزنید:</p>
+            <button onclick="restoreBackup()">📥 پیست و بازگردانی کامل اطلاعات</button>
+        </div>
+
+        <div id="tab-admin-announcements" class="hidden">
+            <h3>➕ ثبت اطلاعیه جدید</h3>
+            <input type="text" id="anno-title" placeholder="عنوان اطلاعیه">
+            <textarea id="anno-content" rows="3" placeholder="متن اطلاعیه..."></textarea>
+            <button onclick="addAnnouncement()">انتشار اطلاعیه</button>
+
+            <hr style="margin: 20px 0; border:0; border-top: 1px solid rgba(255,255,255,0.1);">
+            <h3>📢 اطلاعیه‌های ثبت شده</h3>
+            <div id="admin-announcements-list"></div>
+        </div>
+
         <div id="tab-admin-products" class="hidden">
             <h3>➕ افزودن محصول جدید</h3>
             <input type="text" id="prod-name" placeholder="نام محصول">
@@ -358,20 +427,17 @@
             <div id="admin-products-list"></div>
         </div>
 
-        <!-- تب ۳: مدیریت کاربران -->
         <div id="tab-admin-users" class="hidden">
             <h3>👥 مدیریت کاربران و ستاره‌ها</h3>
             <input type="text" id="search-user" placeholder="🔍 جستجوی نام کاربر..." onkeyup="filterUsers()">
             <div id="admin-users"></div>
         </div>
 
-        <!-- تب ۴: مدیریت سفارش‌ها -->
         <div id="tab-admin-orders" class="hidden">
             <h3>📦 مدیریت کامل سفارش‌ها</h3>
             <div id="admin-orders"></div>
         </div>
 
-        <!-- تب ۵: مدیریت تیکت‌ها -->
         <div id="tab-admin-tickets" class="hidden">
             <h3>💬 مدیریت تیکت‌های پشتیبانی</h3>
             <div id="admin-tickets-list"></div>
@@ -381,6 +447,7 @@
     <script>
         let currentUser = null;
         let allUsersCache = [];
+        let allAnnouncementsCache = [];
 
         function openUserDrawer() {
             document.getElementById('drawer-overlay').style.display = 'block';
@@ -401,12 +468,14 @@
         function switchUserTab(tab) {
             closeDrawer();
             document.getElementById('tab-user-home').classList.add('hidden');
+            document.getElementById('tab-user-announcements').classList.add('hidden');
             document.getElementById('tab-user-shop').classList.add('hidden');
             document.getElementById('tab-user-profile').classList.add('hidden');
             document.getElementById('tab-user-orders').classList.add('hidden');
             document.getElementById('tab-user-tickets').classList.add('hidden');
 
             if(tab === 'home') document.getElementById('tab-user-home').classList.remove('hidden');
+            if(tab === 'announcements') { document.getElementById('tab-user-announcements').classList.remove('hidden'); loadAnnouncementsForUser(); }
             if(tab === 'shop') { document.getElementById('tab-user-shop').classList.remove('hidden'); loadProducts(); }
             if(tab === 'profile') { document.getElementById('tab-user-profile').classList.remove('hidden'); loadProfile(); }
             if(tab === 'orders') { document.getElementById('tab-user-orders').classList.remove('hidden'); loadUserOrders(); }
@@ -416,12 +485,16 @@
         function switchAdminTab(tab) {
             closeDrawer();
             document.getElementById('tab-admin-home').classList.add('hidden');
+            document.getElementById('tab-admin-backup').classList.add('hidden');
+            document.getElementById('tab-admin-announcements').classList.add('hidden');
             document.getElementById('tab-admin-products').classList.add('hidden');
             document.getElementById('tab-admin-users').classList.add('hidden');
             document.getElementById('tab-admin-orders').classList.add('hidden');
             document.getElementById('tab-admin-tickets').classList.add('hidden');
 
             if(tab === 'home') { document.getElementById('tab-admin-home').classList.remove('hidden'); loadAdminData(); }
+            if(tab === 'backup') { document.getElementById('tab-admin-backup').classList.remove('hidden'); }
+            if(tab === 'announcements') { document.getElementById('tab-admin-announcements').classList.remove('hidden'); loadAdminAnnouncements(); }
             if(tab === 'products') { document.getElementById('tab-admin-products').classList.remove('hidden'); loadAdminProducts(); }
             if(tab === 'users') { document.getElementById('tab-admin-users').classList.remove('hidden'); loadAdminData(); }
             if(tab === 'orders') { document.getElementById('tab-admin-orders').classList.remove('hidden'); loadAdminData(); }
@@ -465,11 +538,87 @@
                     document.getElementById('user-section').classList.remove('hidden');
                     document.getElementById('user-name-welcome').innerText = currentUser.username;
                     document.getElementById('user-stars-big').innerText = currentUser.stars + ' ستاره';
+                    checkUnreadAnnouncements();
                     switchUserTab('home');
                 }
             } else {
                 document.getElementById('auth-msg').innerText = data.error;
             }
+        }
+
+        async function getBackup() {
+            const res = await fetch('/api/admin/backup');
+            const data = await res.json();
+            const jsonString = JSON.stringify(data, null, 2);
+            document.getElementById('backup-text').value = jsonString;
+            navigator.clipboard.writeText(jsonString);
+            alert('اطلاعات با موفقیت در حافظه کپی شد! این متن را یک‌جا ذخیره کنید.');
+        }
+
+        async function restoreBackup() {
+            const rawText = document.getElementById('backup-text').value.trim();
+            if(!rawText) return alert('لطفاً ابتدا کدر بکاپ کپی‌شده را درون کادر پیست کنید.');
+
+            try {
+                const backupData = JSON.parse(rawText);
+                const res = await fetch('/api/admin/restore', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ backupData })
+                });
+                const data = await res.json();
+                alert(data.message || data.error);
+                if(res.ok) loadAdminData();
+            } catch(e) {
+                alert('فرمت کد کپی‌شده معتبر نیست.');
+            }
+        }
+
+        async function checkUnreadAnnouncements() {
+            const res = await fetch('/api/announcements');
+            allAnnouncementsCache = await res.json();
+
+            let readIds = JSON.parse(localStorage.getItem(`read_annos_${currentUser.id}`) || '[]');
+            let unreadCount = allAnnouncementsCache.filter(a => !readIds.includes(a.id)).length;
+
+            const topBadge = document.getElementById('top-unread-badge');
+            const drawerBadge = document.getElementById('drawer-unread-badge');
+
+            if(unreadCount > 0) {
+                topBadge.innerText = unreadCount;
+                drawerBadge.innerText = unreadCount;
+                topBadge.classList.remove('hidden');
+                drawerBadge.classList.remove('hidden');
+            } else {
+                topBadge.classList.add('hidden');
+                drawerBadge.classList.add('hidden');
+            }
+        }
+
+        async function loadAnnouncementsForUser() {
+            const res = await fetch('/api/announcements');
+            const announcements = await res.json();
+            const container = document.getElementById('user-announcements-list');
+            container.innerHTML = '';
+
+            let readIds = announcements.map(a => a.id);
+            localStorage.setItem(`read_annos_${currentUser.id}`, JSON.stringify(readIds));
+            checkUnreadAnnouncements();
+
+            if(!announcements || announcements.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#94a3b8;">هیچ اطلاعیه‌ای وجود ندارد.</p>';
+                return;
+            }
+
+            announcements.forEach(a => {
+                container.innerHTML += `
+                    <div class="glass-item">
+                        <h4 style="margin:0 0 5px 0; color:#38bdf8;">📢 ${a.title}</h4>
+                        <span style="font-size:11px; color:#94a3b8;">تاریخ: ${a.date}</span>
+                        <p style="margin:8px 0 0 0; line-height:1.6; font-size:14px;">${a.content}</p>
+                    </div>
+                `;
+            });
         }
 
         async function loadProducts() {
@@ -606,7 +755,7 @@
             const data = await res.json();
 
             document.getElementById('admin-stats').innerHTML = 
-                `کاربران: ${data.stats.totalUsers} نفر | محصولات: ${data.stats.totalProducts} عدد | سفارش‌ها: ${data.stats.totalOrders} عدد | تیکت‌ها: ${data.stats.totalTickets} عدد`;
+                `کاربران: ${data.stats.totalUsers} نفر | محصولات: ${data.stats.totalProducts} | سفارش‌ها: ${data.stats.totalOrders} | اطلاعیه‌ها: ${data.stats.totalAnnouncements}`;
 
             allUsersCache = data.users || [];
             renderUsers(allUsersCache);
@@ -634,6 +783,59 @@
                     </div>
                 `;
             });
+        }
+
+        async function addAnnouncement() {
+            const title = document.getElementById('anno-title').value.trim();
+            const content = document.getElementById('anno-content').value.trim();
+            if(!title || !content) return alert('عنوان و متن اطلاعیه را وارد کنید.');
+
+            const res = await fetch('/api/admin/announcements', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ title, content })
+            });
+            const data = await res.json();
+            alert(data.message || data.error);
+            if(res.ok) {
+                document.getElementById('anno-title').value = '';
+                document.getElementById('anno-content').value = '';
+                loadAdminAnnouncements();
+            }
+        }
+
+        async function loadAdminAnnouncements() {
+            const res = await fetch('/api/announcements');
+            const announcements = await res.json();
+            const container = document.getElementById('admin-announcements-list');
+            container.innerHTML = '';
+
+            if(!announcements || announcements.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#94a3b8;">اطلاعیه‌ای وجود ندارد.</p>';
+                return;
+            }
+
+            announcements.forEach(a => {
+                container.innerHTML += `
+                    <div class="glass-item">
+                        <b>عنوان:</b> ${a.title} (${a.date})<br>
+                        <b>متن:</b> ${a.content}<br>
+                        <button class="btn-danger" style="margin-top:8px;" onclick="deleteAnnouncement(${a.id})">حذف این اطلاعیه</button>
+                    </div>
+                `;
+            });
+        }
+
+        async function deleteAnnouncement(id) {
+            if(!confirm('آیا از حذف این اطلاعیه مطمئن هستید؟')) return;
+
+            await fetch('/api/admin/delete-announcement', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ id })
+            });
+            alert('اطلاعیه حذف شد.');
+            loadAdminAnnouncements();
         }
 
         async function loadAdminProducts() {
@@ -675,7 +877,10 @@
                         <b>متن تیکت:</b> ${t.message}<br>
                         <b>پاسخ فعلی:</b> ${t.adminReply || 'بدون پاسخ'}<br>
                         <input type="text" id="reply-input-${t.id}" placeholder="پاسخ ادمین..." value="${t.adminReply || ''}">
-                        <button onclick="replyTicket(${t.id})">ارسال پاسخ</button>
+                        <div class="flex-btn">
+                            <button onclick="replyTicket(${t.id})">ارسال پاسخ</button>
+                            <button class="btn-danger" onclick="closeTicket(${t.id})">🔒 بستن و حذف تیکت</button>
+                        </div>
                     </div>
                 `;
             });
@@ -695,6 +900,19 @@
             if(res.ok) loadAdminTickets();
         }
 
+        async function closeTicket(ticketId) {
+            if(!confirm('آیا از بستن و حذف این تیکت مطمئن هستید؟')) return;
+
+            const res = await fetch('/api/admin/close-ticket', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ ticketId })
+            });
+            const data = await res.json();
+            alert(data.message || data.error);
+            if(res.ok) loadAdminTickets();
+        }
+
         function renderUsers(users) {
             const usersDiv = document.getElementById('admin-users');
             usersDiv.innerHTML = '';
@@ -707,12 +925,26 @@
                             <div class="flex-btn">
                                 <button onclick="updateStars(${u.id}, 5)">+5 ⭐</button>
                                 <button class="btn-warning" onclick="updateStars(${u.id}, -5)">-5 ⭐</button>
-                                <button class="btn-danger" onclick="toggleBan(${u.id})">${u.isBanned ? 'آنبن' : 'بن کردن'}</button>
+                                <button class="btn-warning" onclick="toggleBan(${u.id})">${u.isBanned ? 'آنبن' : 'بن کردن'}</button>
+                                <button class="btn-danger" onclick="deleteUser(${u.id})">🗑 لغو عضویت (حذف)</button>
                             </div>
                         </div>
                     `;
                 }
             });
+        }
+
+        async function deleteUser(userId) {
+            if(!confirm('آیا از لغو عضویت و حذف کامل این کاربر مطمئن هستید؟ کاربر دیگر نمی‌تواند وارد شود.')) return;
+
+            const res = await fetch('/api/admin/delete-user', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ userId })
+            });
+            const data = await res.json();
+            alert(data.message || data.error);
+            if(res.ok) loadAdminData();
         }
 
         function filterUsers() {
@@ -798,4 +1030,4 @@
         }
     </script>
 </body>
-                                                                                </html>
+            </html>
