@@ -233,7 +233,7 @@
 
         .glass-item img { 
             width: 100%; 
-            max-height: 180px; 
+            max-height: 220px; 
             object-fit: cover; 
             border-radius: 10px; 
         }
@@ -730,23 +730,22 @@
                 if(o.status === 'رد شد') badgeClass = 'status-rejected';
 
                 container.innerHTML += `
-                    <div class="glass-item">
+                    <div class="glass-item" id="order-card-${o.id}">
                         <b>تصویر خریداری شده:</b> ${o.productName} (${o.price} ستاره)<br>
                         <b>تاریخ:</b> ${o.date} <br>
                         <b>وضعیت:</b> <span class="status-badge ${badgeClass}">${o.status}</span><br>
                         
                         ${o.downloaded ? 
-                            `<p style="color:#ef4444; font-size:12px; margin-top:8px;">🔒 این تصویر ۱ بار دانلود شده و قفل گردید.</p>` :
-                            `<button style="margin-top:10px;" onclick="downloadSecretImage(${o.id})">📥 دانلود ۱ بار مصرف تصویر اصلی</button>`
+                            `<p style="color:#ef4444; font-size:12px; margin-top:8px;">🔒 این تصویر ۱ بار دانلود شده و برای مراجعات بعدی قفل گردید.</p>` :
+                            `<button style="margin-top:10px;" onclick="downloadSecretImage(${o.id})">📥 دانلود / مشاهده تصویر اصلی</button>`
                         }
-                        <div id="secret-img-container-${o.id}" class="hidden" style="margin-top:10px;"></div>
                     </div>
                 `;
             });
         }
 
         async function downloadSecretImage(orderId) {
-            if(!confirm('توجه: تصویر اصلی فقط ۱ بار نمایش/دانلود می‌شود و سپس قفل خواهد شد. آیا مطمئن هستید؟')) return;
+            if(!confirm('توجه: تصویر اصلی پس از باز شدن در این صفحه، برای دفعات بعدی قفل خواهد شد. آیا مایل به مشاهده و دانلود هستید؟')) return;
 
             const res = await fetch('/api/user/download-image', {
                 method: 'POST',
@@ -755,11 +754,18 @@
             });
             const data = await res.json();
             if(res.ok) {
-                alert('تصویر اصلی با موفقیت باز شد!');
-                const container = document.getElementById(`secret-img-container-${orderId}`);
-                container.innerHTML = `<img src="${data.secretImage}" style="max-width:100%; border-radius:10px; border:2px solid #10b981;">`;
-                container.classList.remove('hidden');
-                loadUserOrders();
+                alert('تصویر اصلی با موفقیت باز شد! می‌توانید آن را ذخیره کنید.');
+                const cardBox = document.getElementById(`order-card-${orderId}`);
+                cardBox.innerHTML = `
+                    <b>تصویر اصلی آماده دانلود است:</b><br>
+                    <div style="margin-top:10px;">
+                        <img src="${data.secretImage}" style="width:100%; border-radius:12px; border:2px solid #10b981; margin-bottom:10px;">
+                        <a href="${data.secretImage}" target="_blank" download="ai-image.jpg" style="display:block; text-decoration:none;">
+                            <button class="btn-blue">💾 ذخیره و دانلود تصویر اصلی</button>
+                        </a>
+                        <p style="color:#ef4444; font-size:12px; margin-top:8px; text-align:center;">🔒 این تصویر برای مراجعات بعدی قفل گردید.</p>
+                    </div>
+                `;
             } else {
                 alert(data.error);
             }
@@ -1168,4 +1174,4 @@
         }
     </script>
 </body>
-            </html>
+                </html>
