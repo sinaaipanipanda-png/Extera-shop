@@ -20,7 +20,8 @@ if (!fs.existsSync(DB_FILE)) {
         products: [],
         orders: [],
         tickets: [],
-        announcements: []
+        announcements: [],
+        giftCodes: []
     };
     try {
         fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2));
@@ -30,14 +31,15 @@ if (!fs.existsSync(DB_FILE)) {
 function getDB() {
     try {
         if (!fs.existsSync(DB_FILE)) {
-            return { users: [{ id: 1, username: 'admin', password: '123', stars: 999, isBanned: false, isAdmin: true }], products: [], orders: [], tickets: [], announcements: [] };
+            return { users: [{ id: 1, username: 'admin', password: '123', stars: 999, isBanned: false, isAdmin: true }], products: [], orders: [], tickets: [], announcements: [], giftCodes: [] };
         }
         const data = JSON.parse(fs.readFileSync(DB_FILE));
         if(!data.tickets) data.tickets = [];
         if(!data.announcements) data.announcements = [];
+        if(!data.giftCodes) data.giftCodes = [];
         return data;
     } catch (e) {
-        return { users: [], products: [], orders: [], tickets: [], announcements: [] };
+        return { users: [], products: [], orders: [], tickets: [], announcements: [], giftCodes: [] };
     }
 }
 
@@ -49,9 +51,8 @@ function saveDB(data) {
 
 const BAN_MESSAGE = 'حساب شما به دلایل مختلف ، به حالت تعلیق در آمده ، برای تجدید نظر ، به آیدی @panda009822 در سروش پلاس مراجعه فرمائید.';
 
-// ---------------- ای‌پی‌آی‌های عمومی ----------------
+// ---------------- ای‌پی‌آی‌های عمومی و کاربران ----------------
 
-// ثبت نام
 app.post('/api/register', (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) {
@@ -77,7 +78,6 @@ app.post('/api/register', (req, res) => {
     res.json({ message: 'ثبت‌نام با موفقیت انجام شد! ۱۰ ستاره هدیه دریافت کردید.', user: newUser });
 });
 
-// ورود
 app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
     const db = getDB();
@@ -94,19 +94,16 @@ app.post('/api/login', (req, res) => {
     res.json({ message: 'ورود موفقیت‌آمیز', user });
 });
 
-// دریافت محصولات
 app.get('/api/products', (req, res) => {
     const db = getDB();
     res.json(db.products || []);
 });
 
-// دریافت اطلاعیه‌ها
 app.get('/api/announcements', (req, res) => {
     const db = getDB();
     res.json(db.announcements || []);
 });
 
-// دریافت سفارش‌های یک کاربر
 app.get('/api/user/orders', (req, res) => {
     const userId = Number(req.query.userId);
     const db = getDB();
@@ -114,7 +111,7 @@ app.get('/api/user/orders', (req, res) => {
     res.json(userOrders);
 });
 
-// خرید محصول با ستاره
+// خرید محصول
 app.post('/api/buy', (req, res) => {
     const { userId, productId } = req.body;
     const db = getDB();
@@ -133,6 +130,9 @@ app.post('/api/buy', (req, res) => {
         username: user.username,
         productName: product.name,
         price: product.price,
+        previewImage: product.previewImage,
+        secretImage: product.secretImage,
+        downloaded: false,
         status: 'در انتظار',
         date: new Date().toLocaleDateString('fa-IR')
     };
@@ -144,7 +144,61 @@ app.post('/api/buy', (req, res) => {
     res.json({ message: 'خرید با موفقیت انجام شد.', remainingStars: user.stars });
 });
 
-// تغییر رمز عبور کاربر
+// دانلود ۱ بار مصرف عکس اصلی و تغییر وضعیت به تحویل شد
+app.post('/api/user/download-image', (req, res) => {
+    const { orderId, userId } = req.body;
+    const db = getDB();
+    const order = (db.orders || []).find(o => o.id === orderId && o.userId === userId);
+
+    if(!order) return res.status(404).json({ error: 'سفارش یافت نشد.' });
+    if(order.downloaded) return res.status(400).json({ error: 'این تصویر قبلاً ۱ بار دانلود شده و قفل گردیده است.' });
+
+    order.downloaded = true;
+    order.status = 'تحویل شد'; // تغییر اتوماتیک وضعیت
+    saveDB(db);
+
+    res.json({ message: 'تصویر اصلی آماده دانلود است.', secretImage: order.secretImage });
+});
+
+// استفاده از کد هدیه
+app.post('/api/user/redeem-code', (req, res) => {
+    const { userId, code } = req.body;
+    if(!code) return res.status(400).json({ error: 'کد هدیه را وارد کنید.' });
+
+    const db = getDB();
+    const gift = (db.giftCodes || []).find(g => g.code.trim().toLowerCase() === code.trim().toLowerCase());
+    const user = db.users.find(u => u.id === userId);
+
+    if(!gift || !user) return res.status(404).json({ error: 'کد هدیه معتبر نیست.' });
+    if(gift.isExpired) return res.status(400).json({ error: 'این کد هدیه منقضی شده است.' });
+
+    const now = new Date();
+    if(gift.startDate && new Date(gift.startDate) > now) {
+        return res.status(400).json({ error: 'زمان استفاده از این کد هدیه هنوز شروع نشده است.' });
+    }
+    if(gift.endDate && new Date(gift.endDate) < now) {
+        gift.isExpired = true;
+        saveDB(db);
+        return res.status(400).json({ error: 'مهلت استفاده از این کد هدیه به پایان رسیده است.' });
+    }
+
+    if(gift.maxCapacity && gift.usedCount >= gift.maxCapacity) {
+        return res.status(400).json({ error: 'ظرفیت استفاده از این کد هدیه به اتمام رسیده است.' });
+    }
+
+    if(!gift.usedBy) gift.usedBy = [];
+    if(gift.usedBy.includes(userId)) {
+        return res.status(400).json({ error: 'شما قبلاً از این کد هدیه استفاده کرده‌اید.' });
+    }
+
+    gift.usedCount = (gift.usedCount || 0) + 1;
+    gift.usedBy.push(userId);
+    user.stars += gift.stars;
+
+    saveDB(db);
+    res.json({ message: `تبریک! تعداد ${gift.stars} ستاره هدیه به حساب شما اضافه شد.`, newStars: user.stars });
+});
+
 app.post('/api/user/update-profile', (req, res) => {
     const { userId, newPassword } = req.body;
     if(!newPassword) return res.status(400).json({ error: 'رمز عبور جدید را وارد کنید.' });
@@ -160,7 +214,6 @@ app.post('/api/user/update-profile', (req, res) => {
     }
 });
 
-// ارسال تیکت کاربر
 app.post('/api/user/tickets', (req, res) => {
     const { userId, username, title, message } = req.body;
     if(!title || !message) return res.status(400).json({ error: 'عنوان و متن پیام الزامی است.' });
@@ -184,7 +237,6 @@ app.post('/api/user/tickets', (req, res) => {
     res.json({ message: 'تیکت با موفقیت ارسال شد.' });
 });
 
-// دریافت تیکت‌های کاربر
 app.get('/api/user/tickets', (req, res) => {
     const userId = Number(req.query.userId);
     const db = getDB();
@@ -194,13 +246,11 @@ app.get('/api/user/tickets', (req, res) => {
 
 // ---------------- ای‌پی‌آی‌های مدیریت ----------------
 
-// گرفتن کپی (بکاپ) از دیتابیس
 app.get('/api/admin/backup', (req, res) => {
     const db = getDB();
     res.json(db);
 });
 
-// پیست و بازگردانی (رستور) دیتابیس
 app.post('/api/admin/restore', (req, res) => {
     const { backupData } = req.body;
     if(!backupData || !backupData.users) {
@@ -218,14 +268,75 @@ app.get('/api/admin/data', (req, res) => {
         orders: db.orders || [],
         tickets: db.tickets || [],
         announcements: db.announcements || [],
+        giftCodes: db.giftCodes || [],
         stats: {
             totalUsers: (db.users || []).length,
             totalProducts: (db.products || []).length,
             totalOrders: (db.orders || []).length,
             totalTickets: (db.tickets || []).length,
-            totalAnnouncements: (db.announcements || []).length
+            totalAnnouncements: (db.announcements || []).length,
+            totalGiftCodes: (db.giftCodes || []).length
         }
     });
+});
+
+app.post('/api/admin/add-product', (req, res) => {
+    const { name, price, description, previewImage, secretImage } = req.body;
+    if(!name || !price || !previewImage || !secretImage) {
+        return res.status(400).json({ error: 'نام، قیمت، تصویر پیش‌نمایش و تصویر اصلی همگی اجباری هستند.' });
+    }
+
+    const db = getDB();
+    if(!db.products) db.products = [];
+
+    const newProduct = {
+        id: Date.now(),
+        name,
+        price: Number(price),
+        description: description || '',
+        previewImage,
+        secretImage
+    };
+    db.products.push(newProduct);
+    saveDB(db);
+    res.json({ message: 'محصول هوش مصنوعی با موفقیت اضافه شد.' });
+});
+
+app.post('/api/admin/create-gift-code', (req, res) => {
+    const { code, stars, maxCapacity, startDate, endDate } = req.body;
+    if(!code || !stars) return res.status(400).json({ error: 'عنوان کد و تعداد ستاره الزامی است.' });
+
+    const db = getDB();
+    if(!db.giftCodes) db.giftCodes = [];
+
+    const newGift = {
+        id: Date.now(),
+        code: code.trim(),
+        stars: Number(stars),
+        maxCapacity: maxCapacity ? Number(maxCapacity) : null,
+        usedCount: 0,
+        usedBy: [],
+        startDate: startDate || null,
+        endDate: endDate || null,
+        isExpired: false
+    };
+
+    db.giftCodes.push(newGift);
+    saveDB(db);
+    res.json({ message: 'کد هدیه با موفقیت ساخته شد.' });
+});
+
+app.post('/api/admin/expire-gift-code', (req, res) => {
+    const { giftId } = req.body;
+    const db = getDB();
+    const gift = (db.giftCodes || []).find(g => g.id === giftId);
+    if(gift) {
+        gift.isExpired = true;
+        saveDB(db);
+        res.json({ message: 'کد هدیه منقضی شد.' });
+    } else {
+        res.status(404).json({ error: 'کد پیدا نشد.' });
+    }
 });
 
 app.post('/api/admin/announcements', (req, res) => {
@@ -296,25 +407,6 @@ app.post('/api/admin/toggle-ban', (req, res) => {
     } else {
         res.status(404).json({ error: 'کاربر پیدا نشد.' });
     }
-});
-
-app.post('/api/admin/add-product', (req, res) => {
-    const { name, price, description, image } = req.body;
-    if(!name || !price) return res.status(400).json({ error: 'نام و قیمت الزامی است.' });
-
-    const db = getDB();
-    if(!db.products) db.products = [];
-
-    const newProduct = {
-        id: Date.now(),
-        name,
-        price: Number(price),
-        description: description || '',
-        image: image || 'https://via.placeholder.com/150'
-    };
-    db.products.push(newProduct);
-    saveDB(db);
-    res.json({ message: 'محصول اضافه شد.' });
 });
 
 app.post('/api/admin/delete-product', (req, res) => {
