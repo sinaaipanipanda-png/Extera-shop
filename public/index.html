@@ -119,6 +119,7 @@
             box-shadow: -5px 0 25px rgba(0,0,0,0.5);
             transition: right 0.3s ease;
             text-align: right;
+            overflow-y: auto;
         }
 
         .drawer-menu.open { right: 0; }
@@ -232,7 +233,7 @@
 
         .glass-item img { 
             width: 100%; 
-            max-height: 160px; 
+            max-height: 180px; 
             object-fit: cover; 
             border-radius: 10px; 
         }
@@ -278,10 +279,11 @@
             📢 اطلاعیه‌ها 
             <span id="drawer-unread-badge" class="unread-badge hidden">0</span>
         </div>
-        <div class="drawer-item" onclick="switchUserTab('shop')">🛍 فروشگاه (خرید محصول)</div>
+        <div class="drawer-item" onclick="switchUserTab('gift')">🎁 ثبت کد هدیه</div>
+        <div class="drawer-item" onclick="switchUserTab('shop')">🛍 فروشگاه (خرید تصویر)</div>
         <div class="drawer-item" onclick="switchUserTab('profile')">👤 اطلاعات کاربری و ویرایش</div>
-        <div class="drawer-item" onclick="switchUserTab('orders')">📦 مدیریت سفارش‌های ثبت شده</div>
-        <div class="drawer-item" onclick="switchUserTab('tickets')">💬 ارتباط با پشتیبانی (تیکت)</div>
+        <div class="drawer-item" onclick="switchUserTab('orders')">📦 سفارش‌های ثبت شده</div>
+        <div class="drawer-item" onclick="switchUserTab('tickets')">💬 پشتیبانی (تیکت)</div>
         <div style="margin-top: 30px;">
             <button class="btn-danger" onclick="logout()">خروج از حساب</button>
         </div>
@@ -295,6 +297,7 @@
         </div>
         <div class="drawer-item" onclick="switchAdminTab('home')">🏠 صفحه اصلی</div>
         <div class="drawer-item" onclick="switchAdminTab('backup')">💾 پشتیبان‌گیری و بازگردانی</div>
+        <div class="drawer-item" onclick="switchAdminTab('giftCodes')">🎁 مدیریت کدهای هدیه</div>
         <div class="drawer-item" onclick="switchAdminTab('announcements')">📢 مدیریت اطلاعیه‌ها</div>
         <div class="drawer-item" onclick="switchAdminTab('products')">🛍 مدیریت محصولات</div>
         <div class="drawer-item" onclick="switchAdminTab('users')">👥 مدیریت کاربران</div>
@@ -339,12 +342,18 @@
             <div id="user-announcements-list"></div>
         </div>
 
+        <div id="tab-user-gift" class="hidden">
+            <h3>🎁 ثبت کد هدیه</h3>
+            <input type="text" id="user-gift-code" placeholder="کد هدیه را اینجا بنویسید...">
+            <button class="btn-blue" onclick="redeemGiftCode()">اعمال و دریافت ستاره هدیه</button>
+        </div>
+
         <div id="tab-user-shop" class="hidden">
             <div class="big-star-box">
                 <div class="big-star-title">⭐ موجودی ستاره شما ⭐</div>
                 <div id="user-stars-big" class="big-star-count">0 ستاره</div>
             </div>
-            <h3>🛍 فروشگاه محصولات</h3>
+            <h3>🛍 تصاویر هوش مصنوعی</h3>
             <div id="products-list"></div>
         </div>
 
@@ -360,7 +369,7 @@
         </div>
 
         <div id="tab-user-orders" class="hidden">
-            <h3>📦 مدیریت سفارش‌های ثبت شده</h3>
+            <h3>📦 سفارش‌های ثبت شده (دانلود تصویر اصلی)</h3>
             <div id="user-orders-list"></div>
         </div>
 
@@ -391,7 +400,6 @@
             <div id="admin-stats" class="stats-box">در حال بارگذاری آمار...</div>
         </div>
 
-        <!-- تب پشتیبان‌گیری و بازگردانی ۱ کلیکی -->
         <div id="tab-admin-backup" class="hidden">
             <h3>💾 پشتیبان‌گیری و بازگردانی اطلاعات</h3>
             <p style="font-size:13px; color:#cbd5e1;">قبل از آپدیت در گیت‌هاب روی دکمه زیر بزنید تا کدر بکاپ کپی شود:</p>
@@ -401,6 +409,22 @@
             <hr style="margin: 20px 0; border:0; border-top: 1px solid rgba(255,255,255,0.1);">
             <p style="font-size:13px; color:#cbd5e1;">بعد از آپدیت، متن کپی‌شده قبلی را اینجا پیست کنید و بزنید:</p>
             <button onclick="restoreBackup()">📥 پیست و بازگردانی کامل اطلاعات</button>
+        </div>
+
+        <div id="tab-admin-giftCodes" class="hidden">
+            <h3>➕ ایجاد کد هدیه جدید</h3>
+            <input type="text" id="gift-code-input" placeholder="عنوان کد هدیه (مثلاً: NOROOZ1403)">
+            <input type="number" id="gift-stars-input" placeholder="تعداد ستاره هدیه (مثلاً: 20)">
+            <input type="number" id="gift-capacity-input" placeholder="ظرفیت تعداد استفاده (مثلاً: 10 نفر - اختیاری)">
+            <label style="font-size:12px; color:#cbd5e1; display:block; text-align:right; margin-top:5px;">تاریخ شروع مهلت (اختیاری):</label>
+            <input type="datetime-local" id="gift-start-input">
+            <label style="font-size:12px; color:#cbd5e1; display:block; text-align:right; margin-top:5px;">تاریخ پایان مهلت (اختیاری):</label>
+            <input type="datetime-local" id="gift-end-input">
+            <button onclick="createGiftCode()">ساخت کد هدیه</button>
+
+            <hr style="margin: 20px 0; border:0; border-top: 1px solid rgba(255,255,255,0.1);">
+            <h3>🎁 لیست کدهای هدیه فعال</h3>
+            <div id="admin-gift-codes-list"></div>
         </div>
 
         <div id="tab-admin-announcements" class="hidden">
@@ -415,12 +439,13 @@
         </div>
 
         <div id="tab-admin-products" class="hidden">
-            <h3>➕ افزودن محصول جدید</h3>
+            <h3>➕ افزودن محصول تصویر هوش مصنوعی</h3>
             <input type="text" id="prod-name" placeholder="نام محصول">
             <input type="number" id="prod-price" placeholder="قیمت (تعداد ستاره)">
             <input type="text" id="prod-desc" placeholder="توضیحات محصول">
-            <input type="text" id="prod-img" placeholder="لینک تصویر محصول (اختیاری)">
-            <button onclick="addProduct()">افزودن به فروشگاه</button>
+            <input type="text" id="prod-img1" placeholder="لینک تصویر ۱ (پیش‌نمایش قبل خرید - اجباری)">
+            <input type="text" id="prod-img2" placeholder="لینک تصویر ۲ (تصویر اصلی بعد خرید - اجباری)">
+            <button onclick="addProduct()">افزودن محصول</button>
 
             <hr style="margin: 20px 0; border:0; border-top: 1px solid rgba(255,255,255,0.1);">
             <h3>🛍 لیست محصولات فعلی</h3>
@@ -469,6 +494,7 @@
             closeDrawer();
             document.getElementById('tab-user-home').classList.add('hidden');
             document.getElementById('tab-user-announcements').classList.add('hidden');
+            document.getElementById('tab-user-gift').classList.add('hidden');
             document.getElementById('tab-user-shop').classList.add('hidden');
             document.getElementById('tab-user-profile').classList.add('hidden');
             document.getElementById('tab-user-orders').classList.add('hidden');
@@ -476,6 +502,7 @@
 
             if(tab === 'home') document.getElementById('tab-user-home').classList.remove('hidden');
             if(tab === 'announcements') { document.getElementById('tab-user-announcements').classList.remove('hidden'); loadAnnouncementsForUser(); }
+            if(tab === 'gift') { document.getElementById('tab-user-gift').classList.remove('hidden'); }
             if(tab === 'shop') { document.getElementById('tab-user-shop').classList.remove('hidden'); loadProducts(); }
             if(tab === 'profile') { document.getElementById('tab-user-profile').classList.remove('hidden'); loadProfile(); }
             if(tab === 'orders') { document.getElementById('tab-user-orders').classList.remove('hidden'); loadUserOrders(); }
@@ -486,6 +513,7 @@
             closeDrawer();
             document.getElementById('tab-admin-home').classList.add('hidden');
             document.getElementById('tab-admin-backup').classList.add('hidden');
+            document.getElementById('tab-admin-giftCodes').classList.add('hidden');
             document.getElementById('tab-admin-announcements').classList.add('hidden');
             document.getElementById('tab-admin-products').classList.add('hidden');
             document.getElementById('tab-admin-users').classList.add('hidden');
@@ -494,6 +522,7 @@
 
             if(tab === 'home') { document.getElementById('tab-admin-home').classList.remove('hidden'); loadAdminData(); }
             if(tab === 'backup') { document.getElementById('tab-admin-backup').classList.remove('hidden'); }
+            if(tab === 'giftCodes') { document.getElementById('tab-admin-giftCodes').classList.remove('hidden'); loadAdminGiftCodes(); }
             if(tab === 'announcements') { document.getElementById('tab-admin-announcements').classList.remove('hidden'); loadAdminAnnouncements(); }
             if(tab === 'products') { document.getElementById('tab-admin-products').classList.remove('hidden'); loadAdminProducts(); }
             if(tab === 'users') { document.getElementById('tab-admin-users').classList.remove('hidden'); loadAdminData(); }
@@ -543,6 +572,24 @@
                 }
             } else {
                 document.getElementById('auth-msg').innerText = data.error;
+            }
+        }
+
+        async function redeemGiftCode() {
+            const code = document.getElementById('user-gift-code').value.trim();
+            if(!code) return alert('کد هدیه را وارد کنید.');
+
+            const res = await fetch('/api/user/redeem-code', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ userId: currentUser.id, code })
+            });
+            const data = await res.json();
+            alert(data.message || data.error);
+            if(res.ok) {
+                currentUser.stars = data.newStars;
+                document.getElementById('user-stars-big').innerText = currentUser.stars + ' ستاره';
+                document.getElementById('user-gift-code').value = '';
             }
         }
 
@@ -637,11 +684,11 @@
             products.forEach(p => {
                 container.innerHTML += `
                     <div class="glass-item">
-                        <img src="${p.image}" alt="${p.name}">
+                        <img src="${p.previewImage}" alt="${p.name}">
                         <h4 style="margin: 8px 0; font-size: 16px;">${p.name}</h4>
                         <p style="font-size: 13px; color: #cbd5e1; margin: 4px 0;">${p.description}</p>
                         <p style="margin: 8px 0;">قیمت: <b style="color:#fbbf24;">${p.price} ستاره</b></p>
-                        <button onclick="buyProduct(${p.id})">خرید این محصول</button>
+                        <button onclick="buyProduct(${p.id})">خرید این تصویر</button>
                     </div>
                 `;
             });
@@ -684,12 +731,38 @@
 
                 container.innerHTML += `
                     <div class="glass-item">
-                        <b>محصول:</b> ${o.productName} (${o.price} ستاره)<br>
+                        <b>تصویر خریداری شده:</b> ${o.productName} (${o.price} ستاره)<br>
                         <b>تاریخ:</b> ${o.date} <br>
-                        <b>وضعیت:</b> <span class="status-badge ${badgeClass}">${o.status}</span>
+                        <b>وضعیت:</b> <span class="status-badge ${badgeClass}">${o.status}</span><br>
+                        
+                        ${o.downloaded ? 
+                            `<p style="color:#ef4444; font-size:12px; margin-top:8px;">🔒 این تصویر ۱ بار دانلود شده و قفل گردید.</p>` :
+                            `<button style="margin-top:10px;" onclick="downloadSecretImage(${o.id})">📥 دانلود ۱ بار مصرف تصویر اصلی</button>`
+                        }
+                        <div id="secret-img-container-${o.id}" class="hidden" style="margin-top:10px;"></div>
                     </div>
                 `;
             });
+        }
+
+        async function downloadSecretImage(orderId) {
+            if(!confirm('توجه: تصویر اصلی فقط ۱ بار نمایش/دانلود می‌شود و سپس قفل خواهد شد. آیا مطمئن هستید؟')) return;
+
+            const res = await fetch('/api/user/download-image', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ orderId, userId: currentUser.id })
+            });
+            const data = await res.json();
+            if(res.ok) {
+                alert('تصویر اصلی با موفقیت باز شد!');
+                const container = document.getElementById(`secret-img-container-${orderId}`);
+                container.innerHTML = `<img src="${data.secretImage}" style="max-width:100%; border-radius:10px; border:2px solid #10b981;">`;
+                container.classList.remove('hidden');
+                loadUserOrders();
+            } else {
+                alert(data.error);
+            }
         }
 
         async function sendTicket() {
@@ -734,7 +807,7 @@
         }
 
         async function buyProduct(productId) {
-            if(!confirm('آیا از خرید این محصول مطمئن هستید؟')) return;
+            if(!confirm('آیا از خرید این تصویر مطمئن هستید؟')) return;
 
             const res = await fetch('/api/buy', {
                 method: 'POST',
@@ -755,7 +828,7 @@
             const data = await res.json();
 
             document.getElementById('admin-stats').innerHTML = 
-                `کاربران: ${data.stats.totalUsers} نفر | محصولات: ${data.stats.totalProducts} | سفارش‌ها: ${data.stats.totalOrders} | اطلاعیه‌ها: ${data.stats.totalAnnouncements}`;
+                `کاربران: ${data.stats.totalUsers} | محصولات: ${data.stats.totalProducts} | سفارش‌ها: ${data.stats.totalOrders} | کدهای هدیه: ${data.stats.totalGiftCodes}`;
 
             allUsersCache = data.users || [];
             renderUsers(allUsersCache);
@@ -773,7 +846,7 @@
                     <div class="glass-item">
                         <b>کاربر:</b> ${o.username} <br>
                         <b>محصول:</b> ${o.productName} (${o.price} ستاره)<br>
-                        <b>تاریخ:</b> ${o.date} <br>
+                        <b>تاریخ:</b> ${o.date} | <b>دانلود شده:</b> ${o.downloaded ? 'بله' : 'خیر'}<br>
                         <b>وضعیت فعلی:</b> <span class="status-badge ${badgeClass}">${o.status}</span>
                         <div class="flex-btn">
                             <button onclick="changeOrderStatus(${o.id}, 'تحویل شد')">✅ تحویل شد</button>
@@ -783,6 +856,66 @@
                     </div>
                 `;
             });
+        }
+
+        async function createGiftCode() {
+            const code = document.getElementById('gift-code-input').value.trim();
+            const stars = document.getElementById('gift-stars-input').value;
+            const maxCapacity = document.getElementById('gift-capacity-input').value;
+            const startDate = document.getElementById('gift-start-input').value;
+            const endDate = document.getElementById('gift-end-input').value;
+
+            if(!code || !stars) return alert('عنوان کد و تعداد ستاره اجباری است.');
+
+            const res = await fetch('/api/admin/create-gift-code', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ code, stars, maxCapacity, startDate, endDate })
+            });
+            const data = await res.json();
+            alert(data.message || data.error);
+            if(res.ok) {
+                document.getElementById('gift-code-input').value = '';
+                document.getElementById('gift-stars-input').value = '';
+                document.getElementById('gift-capacity-input').value = '';
+                loadAdminGiftCodes();
+            }
+        }
+
+        async function loadAdminGiftCodes() {
+            const res = await fetch('/api/admin/data');
+            const data = await res.json();
+            const container = document.getElementById('admin-gift-codes-list');
+            container.innerHTML = '';
+
+            if(!data.giftCodes || data.giftCodes.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#94a3b8;">کد هدیه‌ای ساخته نشده است.</p>';
+                return;
+            }
+
+            data.giftCodes.forEach(g => {
+                container.innerHTML += `
+                    <div class="glass-item">
+                        <b>کد:</b> <span style="color:#fbbf24; font-size:16px;">${g.code}</span> (${g.stars} ستاره)<br>
+                        <b>تعداد استفاده شده:</b> ${g.usedCount || 0} ${g.maxCapacity ? 'از ' + g.maxCapacity : 'نفر'}<br>
+                        <b>وضعیت:</b> ${g.isExpired ? '<span style="color:#f87171;">منقضی شده</span>' : '<span style="color:#34d399;">فعال</span>'}<br>
+                        ${!g.isExpired ? `<button class="btn-danger" style="margin-top:8px;" onclick="expireGiftCode(${g.id})">🚫 منقضی کردن این کد</button>` : ''}
+                    </div>
+                `;
+            });
+        }
+
+        async function expireGiftCode(giftId) {
+            if(!confirm('آیا از منقضی کردن این کد هدیه مطمئن هستید؟')) return;
+
+            const res = await fetch('/api/admin/expire-gift-code', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ giftId })
+            });
+            const data = await res.json();
+            alert(data.message || data.error);
+            if(res.ok) loadAdminGiftCodes();
         }
 
         async function addAnnouncement() {
@@ -972,24 +1105,29 @@
         }
 
         async function addProduct() {
-            const name = document.getElementById('prod-name').value;
-            const price = document.getElementById('prod-price').value;
-            const description = document.getElementById('prod-desc').value;
-            const image = document.getElementById('prod-img').value;
+            const name = document.getElementById('prod-name').value.trim();
+            const price = document.getElementById('prod-price').value.trim();
+            const description = document.getElementById('prod-desc').value.trim();
+            const previewImage = document.getElementById('prod-img1').value.trim();
+            const secretImage = document.getElementById('prod-img2').value.trim();
 
-            if(!name || !price) return alert('نام و قیمت محصول را وارد کنید.');
+            if(!name || !price || !previewImage || !secretImage) return alert('نام، قیمت، لینک تصویر پیش‌نمایش و لینک تصویر اصلی اجباری هستند.');
 
-            await fetch('/api/admin/add-product', {
+            const res = await fetch('/api/admin/add-product', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ name, price, description, image })
+                body: JSON.stringify({ name, price, description, previewImage, secretImage })
             });
-            alert('محصول با موفقیت اضافه شد');
-            document.getElementById('prod-name').value = '';
-            document.getElementById('prod-price').value = '';
-            document.getElementById('prod-desc').value = '';
-            document.getElementById('prod-img').value = '';
-            loadAdminProducts();
+            const data = await res.json();
+            alert(data.message || data.error);
+            if(res.ok) {
+                document.getElementById('prod-name').value = '';
+                document.getElementById('prod-price').value = '';
+                document.getElementById('prod-desc').value = '';
+                document.getElementById('prod-img1').value = '';
+                document.getElementById('prod-img2').value = '';
+                loadAdminProducts();
+            }
         }
 
         async function deleteProduct(productId) {
