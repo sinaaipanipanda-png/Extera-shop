@@ -111,7 +111,6 @@ app.get('/api/user/orders', (req, res) => {
     res.json(userOrders);
 });
 
-// خرید محصول
 app.post('/api/buy', (req, res) => {
     const { userId, productId } = req.body;
     const db = getDB();
@@ -144,7 +143,6 @@ app.post('/api/buy', (req, res) => {
     res.json({ message: 'خرید با موفقیت انجام شد.', remainingStars: user.stars });
 });
 
-// دانلود ۱ بار مصرف عکس اصلی و تغییر وضعیت به تحویل شد
 app.post('/api/user/download-image', (req, res) => {
     const { orderId, userId } = req.body;
     const db = getDB();
@@ -154,13 +152,12 @@ app.post('/api/user/download-image', (req, res) => {
     if(order.downloaded) return res.status(400).json({ error: 'این تصویر قبلاً ۱ بار دانلود شده و قفل گردیده است.' });
 
     order.downloaded = true;
-    order.status = 'تحویل شد'; // تغییر اتوماتیک وضعیت
+    order.status = 'تحویل شد';
     saveDB(db);
 
-    res.json({ message: 'تصویر اصلی آماده دانلود است.', secretImage: order.secretImage });
+    res.json({ message: 'تصویر اصلی آماده دانلود است.', secretImage: order.secretImage, productName: order.productName });
 });
 
-// استفاده از کد هدیه
 app.post('/api/user/redeem-code', (req, res) => {
     const { userId, code } = req.body;
     if(!code) return res.status(400).json({ error: 'کد هدیه را وارد کنید.' });
@@ -280,6 +277,19 @@ app.get('/api/admin/data', (req, res) => {
     });
 });
 
+app.post('/api/admin/set-stars', (req, res) => {
+    const { userId, stars } = req.body;
+    const db = getDB();
+    const user = db.users.find(u => u.id === userId);
+    if (user) {
+        user.stars = Math.max(0, Number(stars));
+        saveDB(db);
+        res.json({ message: 'موجودی ستاره کاربر تغییر یافت.', newStars: user.stars });
+    } else {
+        res.status(404).json({ error: 'کاربر پیدا نشد.' });
+    }
+});
+
 app.post('/api/admin/add-product', (req, res) => {
     const { name, price, description, previewImage, secretImage } = req.body;
     if(!name || !price || !previewImage || !secretImage) {
@@ -381,19 +391,6 @@ app.post('/api/admin/close-ticket', (req, res) => {
     db.tickets = (db.tickets || []).filter(t => t.id !== ticketId);
     saveDB(db);
     res.json({ message: 'تیکت بسته شد و از سیستم حذف گردید.' });
-});
-
-app.post('/api/admin/update-stars', (req, res) => {
-    const { userId, amount } = req.body;
-    const db = getDB();
-    const user = db.users.find(u => u.id === userId);
-    if (user) {
-        user.stars = Math.max(0, user.stars + amount);
-        saveDB(db);
-        res.json({ message: 'ستاره به‌روزرسانی شد.', newStars: user.stars });
-    } else {
-        res.status(404).json({ error: 'کاربر پیدا نشد.' });
-    }
 });
 
 app.post('/api/admin/toggle-ban', (req, res) => {
