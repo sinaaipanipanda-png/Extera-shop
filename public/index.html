@@ -20,6 +20,71 @@
             color: #f8fafc; 
         }
 
+        /* نوتیفیکیشن‌های شیشه‌ای مدرن */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 90%;
+            max-width: 400px;
+            pointer-events: none;
+        }
+
+        .toast {
+            pointer-events: auto;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 14px 20px;
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+            animation: slideDown 0.4s ease, fadeOut 0.4s ease 3.6s forwards;
+        }
+        .toast.success { border-color: #10b981; background: rgba(16, 185, 129, 0.2); }
+        .toast.error { border-color: #ef4444; background: rgba(239, 68, 68, 0.2); }
+
+        @keyframes slideDown {
+            from { transform: translateY(-30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        /* کادر تایید شیشه‌ای اختصاصی */
+        .confirm-modal-overlay {
+            position: fixed;
+            top:0; left:0; right:0; bottom:0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(6px);
+            z-index: 9998;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .confirm-modal-box {
+            background: rgba(30, 27, 75, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 25px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+        }
+
         .glass-card { 
             background: rgba(255, 255, 255, 0.08); 
             backdrop-filter: blur(16px); 
@@ -209,7 +274,7 @@
             box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
         }
 
-        .hidden { display: none; }
+        .hidden { display: none !important; }
 
         .big-star-box {
             background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.25) 100%);
@@ -265,6 +330,21 @@
     </style>
 </head>
 <body>
+
+    <!-- کانتینر نوتیفیکیشن شناور -->
+    <div id="toast-container"></div>
+
+    <!-- کادر تایید اختصاصی -->
+    <div id="confirm-modal" class="confirm-modal-overlay hidden">
+        <div class="confirm-modal-box">
+            <h3 id="confirm-modal-title" style="margin-bottom:15px;">تایید عملیات</h3>
+            <p id="confirm-modal-msg" style="color:#cbd5e1; margin-bottom:20px; font-size:14px;"></p>
+            <div class="flex-btn">
+                <button id="confirm-modal-yes-btn">بله، انجام بده</button>
+                <button class="btn-danger" onclick="closeConfirmModal()">انصراف</button>
+            </div>
+        </div>
+    </div>
 
     <div id="drawer-overlay" class="drawer-overlay" onclick="closeDrawer()"></div>
 
@@ -474,6 +554,33 @@
         let allUsersCache = [];
         let allAnnouncementsCache = [];
 
+        // نمایش نوتیفیکیشن مدرن شیشه‌ای
+        function showToast(msg, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerText = msg;
+            container.appendChild(toast);
+            setTimeout(() => { toast.remove(); }, 4000);
+        }
+
+        // کادر تایید اختصاصی شیشه‌ای
+        function customConfirm(msg, onConfirm) {
+            document.getElementById('confirm-modal-msg').innerText = msg;
+            const modal = document.getElementById('confirm-modal');
+            modal.classList.remove('hidden');
+
+            const yesBtn = document.getElementById('confirm-modal-yes-btn');
+            yesBtn.onclick = function() {
+                closeConfirmModal();
+                onConfirm();
+            };
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirm-modal').classList.add('hidden');
+        }
+
         function openUserDrawer() {
             document.getElementById('drawer-overlay').style.display = 'block';
             document.getElementById('user-drawer').classList.add('open');
@@ -533,7 +640,7 @@
         async function register() {
             const u = document.getElementById('username').value.trim();
             const p = document.getElementById('password').value.trim();
-            if(!u || !p) return alert('نام کاربری و رمز عبور را وارد کنید.');
+            if(!u || !p) return showToast('نام کاربری و رمز عبور را وارد کنید.', 'error');
 
             const res = await fetch('/api/register', {
                 method: 'POST',
@@ -541,13 +648,13 @@
                 body: JSON.stringify({ username: u, password: p })
             });
             const data = await res.json();
-            alert(data.message || data.error);
+            showToast(data.message || data.error, res.ok ? 'success' : 'error');
         }
 
         async function login() {
             const u = document.getElementById('username').value.trim();
             const p = document.getElementById('password').value.trim();
-            if(!u || !p) return alert('نام کاربری و رمز عبور را وارد کنید.');
+            if(!u || !p) return showToast('نام کاربری و رمز عبور را وارد کنید.', 'error');
 
             const res = await fetch('/api/login', {
                 method: 'POST',
@@ -570,14 +677,16 @@
                     checkUnreadAnnouncements();
                     switchUserTab('home');
                 }
+                showToast('ورود با موفقیت انجام شد!', 'success');
             } else {
                 document.getElementById('auth-msg').innerText = data.error;
+                showToast(data.error, 'error');
             }
         }
 
         async function redeemGiftCode() {
             const code = document.getElementById('user-gift-code').value.trim();
-            if(!code) return alert('کد هدیه را وارد کنید.');
+            if(!code) return showToast('کد هدیه را وارد کنید.', 'error');
 
             const res = await fetch('/api/user/redeem-code', {
                 method: 'POST',
@@ -585,7 +694,7 @@
                 body: JSON.stringify({ userId: currentUser.id, code })
             });
             const data = await res.json();
-            alert(data.message || data.error);
+            showToast(data.message || data.error, res.ok ? 'success' : 'error');
             if(res.ok) {
                 currentUser.stars = data.newStars;
                 document.getElementById('user-stars-big').innerText = currentUser.stars + ' ستاره';
@@ -599,12 +708,12 @@
             const jsonString = JSON.stringify(data, null, 2);
             document.getElementById('backup-text').value = jsonString;
             navigator.clipboard.writeText(jsonString);
-            alert('اطلاعات با موفقیت در حافظه کپی شد! این متن را یک‌جا ذخیره کنید.');
+            showToast('اطلاعات کپی شد! متن را ذخیره کنید.', 'success');
         }
 
         async function restoreBackup() {
             const rawText = document.getElementById('backup-text').value.trim();
-            if(!rawText) return alert('لطفاً ابتدا کدر بکاپ کپی‌شده را درون کادر پیست کنید.');
+            if(!rawText) return showToast('ابتدا کد کپی‌شده را پیست کنید.', 'error');
 
             try {
                 const backupData = JSON.parse(rawText);
@@ -614,10 +723,10 @@
                     body: JSON.stringify({ backupData })
                 });
                 const data = await res.json();
-                alert(data.message || data.error);
+                showToast(data.message || data.error, res.ok ? 'success' : 'error');
                 if(res.ok) loadAdminData();
             } catch(e) {
-                alert('فرمت کد کپی‌شده معتبر نیست.');
+                showToast('فرمت کد کپی‌شده معتبر نیست.', 'error');
             }
         }
 
@@ -701,7 +810,7 @@
 
         async function updatePassword() {
             const newPassword = document.getElementById('new-password').value.trim();
-            if(!newPassword) return alert('رمز عبور جدید را وارد کنید.');
+            if(!newPassword) return showToast('رمز عبور جدید را وارد کنید.', 'error');
 
             const res = await fetch('/api/user/update-profile', {
                 method: 'POST',
@@ -709,7 +818,7 @@
                 body: JSON.stringify({ userId: currentUser.id, newPassword })
             });
             const data = await res.json();
-            alert(data.message || data.error);
+            showToast(data.message || data.error, res.ok ? 'success' : 'error');
             if(res.ok) document.getElementById('new-password').value = '';
         }
 
@@ -744,37 +853,37 @@
             });
         }
 
-        async function downloadSecretImage(orderId) {
-            if(!confirm('توجه: تصویر اصلی پس از باز شدن در این صفحه، برای دفعات بعدی قفل خواهد شد. آیا مایل به مشاهده و دانلود هستید؟')) return;
-
-            const res = await fetch('/api/user/download-image', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ orderId, userId: currentUser.id })
+        function downloadSecretImage(orderId) {
+            customConfirm('توجه: تصویر اصلی پس از باز شدن در این صفحه، برای دفعات بعدی قفل خواهد شد. آیا مایل به مشاهده هستید؟', async () => {
+                const res = await fetch('/api/user/download-image', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ orderId, userId: currentUser.id })
+                });
+                const data = await res.json();
+                if(res.ok) {
+                    showToast('تصویر اصلی باز شد! آن را ذخیره کنید.', 'success');
+                    const cardBox = document.getElementById(`order-card-${orderId}`);
+                    cardBox.innerHTML = `
+                        <b>تصویر اصلی آماده دانلود است:</b><br>
+                        <div style="margin-top:10px;">
+                            <img src="${data.secretImage}" style="width:100%; border-radius:12px; border:2px solid #10b981; margin-bottom:10px;">
+                            <a href="${data.secretImage}" target="_blank" download="ai-image.jpg" style="display:block; text-decoration:none;">
+                                <button class="btn-blue">💾 ذخیره و دانلود تصویر اصلی</button>
+                            </a>
+                            <p style="color:#ef4444; font-size:12px; margin-top:8px; text-align:center;">🔒 این تصویر برای مراجعات بعدی قفل گردید.</p>
+                        </div>
+                    `;
+                } else {
+                    showToast(data.error, 'error');
+                }
             });
-            const data = await res.json();
-            if(res.ok) {
-                alert('تصویر اصلی با موفقیت باز شد! می‌توانید آن را ذخیره کنید.');
-                const cardBox = document.getElementById(`order-card-${orderId}`);
-                cardBox.innerHTML = `
-                    <b>تصویر اصلی آماده دانلود است:</b><br>
-                    <div style="margin-top:10px;">
-                        <img src="${data.secretImage}" style="width:100%; border-radius:12px; border:2px solid #10b981; margin-bottom:10px;">
-                        <a href="${data.secretImage}" target="_blank" download="ai-image.jpg" style="display:block; text-decoration:none;">
-                            <button class="btn-blue">💾 ذخیره و دانلود تصویر اصلی</button>
-                        </a>
-                        <p style="color:#ef4444; font-size:12px; margin-top:8px; text-align:center;">🔒 این تصویر برای مراجعات بعدی قفل گردید.</p>
-                    </div>
-                `;
-            } else {
-                alert(data.error);
-            }
         }
 
         async function sendTicket() {
             const title = document.getElementById('ticket-title').value.trim();
             const message = document.getElementById('ticket-message').value.trim();
-            if(!title || !message) return alert('عنوان و متن پیام را وارد کنید.');
+            if(!title || !message) return showToast('عنوان و متن پیام را وارد کنید.', 'error');
 
             const res = await fetch('/api/user/tickets', {
                 method: 'POST',
@@ -782,7 +891,7 @@
                 body: JSON.stringify({ userId: currentUser.id, username: currentUser.username, title, message })
             });
             const data = await res.json();
-            alert(data.message || data.error);
+            showToast(data.message || data.error, res.ok ? 'success' : 'error');
             if(res.ok) {
                 document.getElementById('ticket-title').value = '';
                 document.getElementById('ticket-message').value = '';
@@ -812,20 +921,20 @@
             });
         }
 
-        async function buyProduct(productId) {
-            if(!confirm('آیا از خرید این تصویر مطمئن هستید؟')) return;
-
-            const res = await fetch('/api/buy', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ userId: currentUser.id, productId })
+        function buyProduct(productId) {
+            customConfirm('آیا از خرید این تصویر مطمئن هستید؟ ستاره کسر خواهد شد.', async () => {
+                const res = await fetch('/api/buy', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ userId: currentUser.id, productId })
+                });
+                const data = await res.json();
+                showToast(data.message || data.error, res.ok ? 'success' : 'error');
+                if (res.ok) {
+                    currentUser.stars = data.remainingStars;
+                    document.getElementById('user-stars-big').innerText = currentUser.stars + ' ستاره';
+                }
             });
-            const data = await res.json();
-            alert(data.message || data.error);
-            if (res.ok) {
-                currentUser.stars = data.remainingStars;
-                document.getElementById('user-stars-big').innerText = currentUser.stars + ' ستاره';
-            }
         }
 
         // توابع ادمین
@@ -864,6 +973,20 @@
             });
         }
 
+        async function setStarsDirect(userId) {
+            const inputVal = document.getElementById(`set-stars-input-${userId}`).value;
+            if(inputVal === '') return showToast('تعداد ستاره را وارد کنید.', 'error');
+
+            const res = await fetch('/api/admin/set-stars', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ userId, stars: Number(inputVal) })
+            });
+            const data = await res.json();
+            showToast(data.message || data.error, res.ok ? 'success' : 'error');
+            if(res.ok) loadAdminData();
+        }
+
         async function createGiftCode() {
             const code = document.getElementById('gift-code-input').value.trim();
             const stars = document.getElementById('gift-stars-input').value;
@@ -871,7 +994,7 @@
             const startDate = document.getElementById('gift-start-input').value;
             const endDate = document.getElementById('gift-end-input').value;
 
-            if(!code || !stars) return alert('عنوان کد و تعداد ستاره اجباری است.');
+            if(!code || !stars) return showToast('عنوان کد و تعداد ستاره اجباری است.', 'error');
 
             const res = await fetch('/api/admin/create-gift-code', {
                 method: 'POST',
@@ -879,7 +1002,7 @@
                 body: JSON.stringify({ code, stars, maxCapacity, startDate, endDate })
             });
             const data = await res.json();
-            alert(data.message || data.error);
+            showToast(data.message || data.error, res.ok ? 'success' : 'error');
             if(res.ok) {
                 document.getElementById('gift-code-input').value = '';
                 document.getElementById('gift-stars-input').value = '';
@@ -911,23 +1034,23 @@
             });
         }
 
-        async function expireGiftCode(giftId) {
-            if(!confirm('آیا از منقضی کردن این کد هدیه مطمئن هستید؟')) return;
-
-            const res = await fetch('/api/admin/expire-gift-code', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ giftId })
+        function expireGiftCode(giftId) {
+            customConfirm('آیا از منقضی کردن این کد هدیه مطمئن هستید؟', async () => {
+                const res = await fetch('/api/admin/expire-gift-code', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ giftId })
+                });
+                const data = await res.json();
+                showToast(data.message || data.error, res.ok ? 'success' : 'error');
+                if(res.ok) loadAdminGiftCodes();
             });
-            const data = await res.json();
-            alert(data.message || data.error);
-            if(res.ok) loadAdminGiftCodes();
         }
 
         async function addAnnouncement() {
             const title = document.getElementById('anno-title').value.trim();
             const content = document.getElementById('anno-content').value.trim();
-            if(!title || !content) return alert('عنوان و متن اطلاعیه را وارد کنید.');
+            if(!title || !content) return showToast('عنوان و متن اطلاعیه را وارد کنید.', 'error');
 
             const res = await fetch('/api/admin/announcements', {
                 method: 'POST',
@@ -935,7 +1058,7 @@
                 body: JSON.stringify({ title, content })
             });
             const data = await res.json();
-            alert(data.message || data.error);
+            showToast(data.message || data.error, res.ok ? 'success' : 'error');
             if(res.ok) {
                 document.getElementById('anno-title').value = '';
                 document.getElementById('anno-content').value = '';
@@ -965,16 +1088,16 @@
             });
         }
 
-        async function deleteAnnouncement(id) {
-            if(!confirm('آیا از حذف این اطلاعیه مطمئن هستید؟')) return;
-
-            await fetch('/api/admin/delete-announcement', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ id })
+        function deleteAnnouncement(id) {
+            customConfirm('آیا از حذف این اطلاعیه مطمئن هستید؟', async () => {
+                await fetch('/api/admin/delete-announcement', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ id })
+                });
+                showToast('اطلاعیه حذف شد.', 'success');
+                loadAdminAnnouncements();
             });
-            alert('اطلاعیه حذف شد.');
-            loadAdminAnnouncements();
         }
 
         async function loadAdminProducts() {
@@ -1027,7 +1150,7 @@
 
         async function replyTicket(ticketId) {
             const reply = document.getElementById(`reply-input-${ticketId}`).value.trim();
-            if(!reply) return alert('متن پاسخ را وارد کنید.');
+            if(!reply) return showToast('متن پاسخ را وارد کنید.', 'error');
 
             const res = await fetch('/api/admin/reply-ticket', {
                 method: 'POST',
@@ -1035,21 +1158,21 @@
                 body: JSON.stringify({ ticketId, reply, status: 'پاسخ داده شد' })
             });
             const data = await res.json();
-            alert(data.message || data.error);
+            showToast(data.message || data.error, res.ok ? 'success' : 'error');
             if(res.ok) loadAdminTickets();
         }
 
-        async function closeTicket(ticketId) {
-            if(!confirm('آیا از بستن و حذف این تیکت مطمئن هستید؟')) return;
-
-            const res = await fetch('/api/admin/close-ticket', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ ticketId })
+        function closeTicket(ticketId) {
+            customConfirm('آیا از بستن و حذف این تیکت مطمئن هستید؟', async () => {
+                const res = await fetch('/api/admin/close-ticket', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ ticketId })
+                });
+                const data = await res.json();
+                showToast(data.message || data.error, res.ok ? 'success' : 'error');
+                if(res.ok) loadAdminTickets();
             });
-            const data = await res.json();
-            alert(data.message || data.error);
-            if(res.ok) loadAdminTickets();
         }
 
         function renderUsers(users) {
@@ -1059,11 +1182,15 @@
                 if(!u.isAdmin) {
                     usersDiv.innerHTML += `
                         <div class="glass-item">
-                            <b>نام کاربر:</b> ${u.username} | <b>موجودی:</b> ${u.stars} ⭐<br>
+                            <b>نام کاربر:</b> ${u.username} | <b>موجودی فعلی:</b> ${u.stars} ⭐<br>
                             <b>وضعیت:</b> ${u.isBanned ? '<span style="color:#f87171;">🚫 بن شده</span>' : '<span style="color:#34d399;">✅ فعال</span>'}
+                            
+                            <div style="display:flex; gap:8px; margin-top:10px; align-items:center;">
+                                <input type="number" id="set-stars-input-${u.id}" value="${u.stars}" placeholder="تعداد ستاره" style="margin:0;">
+                                <button onclick="setStarsDirect(${u.id})" style="min-width:100px; margin:0;">ثبت ستاره</button>
+                            </div>
+
                             <div class="flex-btn">
-                                <button onclick="updateStars(${u.id}, 5)">+5 ⭐</button>
-                                <button class="btn-warning" onclick="updateStars(${u.id}, -5)">-5 ⭐</button>
                                 <button class="btn-warning" onclick="toggleBan(${u.id})">${u.isBanned ? 'آنبن' : 'بن کردن'}</button>
                                 <button class="btn-danger" onclick="deleteUser(${u.id})">🗑 لغو عضویت (حذف)</button>
                             </div>
@@ -1073,17 +1200,17 @@
             });
         }
 
-        async function deleteUser(userId) {
-            if(!confirm('آیا از لغو عضویت و حذف کامل این کاربر مطمئن هستید؟ کاربر دیگر نمی‌تواند وارد شود.')) return;
-
-            const res = await fetch('/api/admin/delete-user', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ userId })
+        function deleteUser(userId) {
+            customConfirm('آیا از لغو عضویت و حذف کامل این کاربر مطمئن هستید؟ کاربر دیگر نمی‌تواند وارد شود.', async () => {
+                const res = await fetch('/api/admin/delete-user', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ userId })
+                });
+                const data = await res.json();
+                showToast(data.message || data.error, res.ok ? 'success' : 'error');
+                if(res.ok) loadAdminData();
             });
-            const data = await res.json();
-            alert(data.message || data.error);
-            if(res.ok) loadAdminData();
         }
 
         function filterUsers() {
@@ -1092,21 +1219,13 @@
             renderUsers(filtered);
         }
 
-        async function updateStars(userId, amount) {
-            await fetch('/api/admin/update-stars', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ userId, amount })
-            });
-            loadAdminData();
-        }
-
         async function toggleBan(userId) {
             await fetch('/api/admin/toggle-ban', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ userId })
             });
+            showToast('وضعیت بن کاربر تغییر یافت.', 'success');
             loadAdminData();
         }
 
@@ -1117,7 +1236,7 @@
             const previewImage = document.getElementById('prod-img1').value.trim();
             const secretImage = document.getElementById('prod-img2').value.trim();
 
-            if(!name || !price || !previewImage || !secretImage) return alert('نام، قیمت، لینک تصویر پیش‌نمایش و لینک تصویر اصلی اجباری هستند.');
+            if(!name || !price || !previewImage || !secretImage) return showToast('نام، قیمت، لینک تصویر ۱ و ۲ اجباری هستند.', 'error');
 
             const res = await fetch('/api/admin/add-product', {
                 method: 'POST',
@@ -1125,7 +1244,7 @@
                 body: JSON.stringify({ name, price, description, previewImage, secretImage })
             });
             const data = await res.json();
-            alert(data.message || data.error);
+            showToast(data.message || data.error, res.ok ? 'success' : 'error');
             if(res.ok) {
                 document.getElementById('prod-name').value = '';
                 document.getElementById('prod-price').value = '';
@@ -1136,16 +1255,16 @@
             }
         }
 
-        async function deleteProduct(productId) {
-            if(!confirm('آیا از حذف این محصول مطمئن هستید؟')) return;
-
-            await fetch('/api/admin/delete-product', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ productId })
+        function deleteProduct(productId) {
+            customConfirm('آیا از حذف این محصول مطمئن هستید؟', async () => {
+                await fetch('/api/admin/delete-product', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ productId })
+                });
+                showToast('محصول حذف شد', 'success');
+                loadAdminProducts();
             });
-            alert('محصول حذف شد');
-            loadAdminProducts();
         }
 
         async function changeOrderStatus(orderId, status) {
@@ -1154,19 +1273,20 @@
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ orderId, status })
             });
+            showToast('وضعیت سفارش تغییر کرد.', 'success');
             loadAdminData();
         }
 
-        async function deleteOrder(orderId) {
-            if(!confirm('آیا از حذف این سفارش مطمئن هستید؟')) return;
-
-            await fetch('/api/admin/delete-order', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ orderId })
+        function deleteOrder(orderId) {
+            customConfirm('آیا از حذف این سفارش مطمئن هستید؟', async () => {
+                await fetch('/api/admin/delete-order', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ orderId })
+                });
+                showToast('سفارش حذف شد.', 'success');
+                loadAdminData();
             });
-            alert('سفارش حذف شد.');
-            loadAdminData();
         }
 
         function logout() {
@@ -1174,4 +1294,4 @@
         }
     </script>
 </body>
-                </html>
+            </html>
