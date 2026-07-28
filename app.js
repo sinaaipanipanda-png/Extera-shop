@@ -14,6 +14,10 @@ const DB_FILE = process.env.RENDER ? '/tmp/database.json' : path.join(__dirname,
 // ساخت دیتابیس اولیه
 if (!fs.existsSync(DB_FILE)) {
     const initialData = {
+        settings: {
+            storeName: 'Extera shop',
+            logoUrl: 'https://via.placeholder.com/100/1e1b4b/fbbf24?text=Extera'
+        },
         users: [
             { id: 1, username: 'admin', password: '123', stars: 999, isBanned: false, isAdmin: true }
         ],
@@ -31,15 +35,23 @@ if (!fs.existsSync(DB_FILE)) {
 function getDB() {
     try {
         if (!fs.existsSync(DB_FILE)) {
-            return { users: [{ id: 1, username: 'admin', password: '123', stars: 999, isBanned: false, isAdmin: true }], products: [], orders: [], tickets: [], announcements: [], giftCodes: [] };
+            return {
+                settings: { storeName: 'Extera shop', logoUrl: 'https://via.placeholder.com/100/1e1b4b/fbbf24?text=Extera' },
+                users: [{ id: 1, username: 'admin', password: '123', stars: 999, isBanned: false, isAdmin: true }],
+                products: [], orders: [], tickets: [], announcements: [], giftCodes: []
+            };
         }
         const data = JSON.parse(fs.readFileSync(DB_FILE));
+        if(!data.settings) data.settings = { storeName: 'Extera shop', logoUrl: 'https://via.placeholder.com/100/1e1b4b/fbbf24?text=Extera' };
         if(!data.tickets) data.tickets = [];
         if(!data.announcements) data.announcements = [];
         if(!data.giftCodes) data.giftCodes = [];
         return data;
     } catch (e) {
-        return { users: [], products: [], orders: [], tickets: [], announcements: [], giftCodes: [] };
+        return {
+            settings: { storeName: 'Extera shop', logoUrl: 'https://via.placeholder.com/100/1e1b4b/fbbf24?text=Extera' },
+            users: [], products: [], orders: [], tickets: [], announcements: [], giftCodes: []
+        };
     }
 }
 
@@ -52,6 +64,12 @@ function saveDB(data) {
 const BAN_MESSAGE = 'حساب شما به دلایل مختلف ، به حالت تعلیق در آمده ، برای تجدید نظر ، به آیدی @panda009822 در سروش پلاس مراجعه فرمائید.';
 
 // ---------------- ای‌پی‌آی‌های عمومی و کاربران ----------------
+
+// دریافت تنظیمات نام و لوگوی سایت
+app.get('/api/settings', (req, res) => {
+    const db = getDB();
+    res.json(db.settings || { storeName: 'Extera shop', logoUrl: '' });
+});
 
 app.post('/api/register', (req, res) => {
     const { username, password } = req.body;
@@ -146,16 +164,16 @@ app.post('/api/buy', (req, res) => {
 app.post('/api/user/download-image', (req, res) => {
     const { orderId, userId } = req.body;
     const db = getDB();
-    const order = (db.orders || []).find(o => o.id === orderId && o.userId === userId);
+    const order = (db.orders || []).filter(o => o.id === orderId && o.userId === userId)[0];
 
     if(!order) return res.status(404).json({ error: 'سفارش یافت نشد.' });
-    if(order.downloaded) return res.status(400).json({ error: 'این تصویر قبلاً ۱ بار دانلود شده و قفل گردیده است.' });
+    if(order.downloaded) return res.status(400).json({ error: 'این محتوا قبلاً ۱ بار دریافت شده و قفل گردیده است.' });
 
     order.downloaded = true;
     order.status = 'تحویل شد';
     saveDB(db);
 
-    res.json({ message: 'تصویر اصلی آماده دانلود است.', secretImage: order.secretImage, productName: order.productName });
+    res.json({ message: 'محتوای اصلی آماده مشاهده است.', secretImage: order.secretImage, productName: order.productName });
 });
 
 app.post('/api/user/redeem-code', (req, res) => {
@@ -243,6 +261,20 @@ app.get('/api/user/tickets', (req, res) => {
 
 // ---------------- ای‌پی‌آی‌های مدیریت ----------------
 
+// ویرایش نام و لوگوی سایت
+app.post('/api/admin/settings', (req, res) => {
+    const { storeName, logoUrl } = req.body;
+    if(!storeName) return res.status(400).json({ error: 'نام فروشگاه الزامی است.' });
+
+    const db = getDB();
+    db.settings = {
+        storeName: storeName.trim(),
+        logoUrl: logoUrl ? logoUrl.trim() : 'https://via.placeholder.com/100/1e1b4b/fbbf24?text=Logo'
+    };
+    saveDB(db);
+    res.json({ message: 'تنظیمات نام و لوگوی سایت با موفقیت به‌روزرسانی شد.' });
+});
+
 app.get('/api/admin/backup', (req, res) => {
     const db = getDB();
     res.json(db);
@@ -260,6 +292,7 @@ app.post('/api/admin/restore', (req, res) => {
 app.get('/api/admin/data', (req, res) => {
     const db = getDB();
     res.json({
+        settings: db.settings,
         users: db.users || [],
         products: db.products || [],
         orders: db.orders || [],
@@ -290,11 +323,10 @@ app.post('/api/admin/set-stars', (req, res) => {
     }
 });
 
-// ثبت محصول با تصویر اول اجباری و تصویر دوم اختیاری
 app.post('/api/admin/add-product', (req, res) => {
     const { name, price, description, previewImage, secretImage } = req.body;
     if(!name || !price || !previewImage) {
-        return res.status(400).json({ error: 'نام، قیمت و تصویر اول (پیش‌نمایش) اجباری هستند.' });
+        return res.status(400).json({ error: 'نام، قیمت و تصویر پیش‌نمایش اجباری هستند.' });
     }
 
     const db = getDB();
@@ -306,7 +338,7 @@ app.post('/api/admin/add-product', (req, res) => {
         price: Number(price),
         description: description || '',
         previewImage,
-        secretImage: secretImage || previewImage // اگر دوم خالی باشد، همان اولی را می‌گذارد
+        secretImage: secretImage || previewImage
     };
     db.products.push(newProduct);
     saveDB(db);
