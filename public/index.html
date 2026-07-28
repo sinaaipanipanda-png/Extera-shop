@@ -3,22 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>فروشگاه هوش مدرن</title>
+    <title>Extera shop | اکسترا شاپ</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
     
     <style>
         * { box-sizing: border-box; font-family: 'Vazirmatn', sans-serif; }
         
         body { 
-            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%); 
+            background: linear-gradient(135deg, #090d16 0%, #111827 50%, #1e1b4b 100%); 
             min-height: 100vh;
             margin: 0; 
             padding: 20px 10px; 
             text-align: center; 
             color: #f8fafc; 
         }
+
+        /* لوگوی دایره‌ای درخشان */
+        .logo-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #fbbf24;
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+            margin: 0 auto 12px auto;
+            display: block;
+            background: #ffffff;
+            transition: transform 0.3s ease;
+        }
+        .logo-circle:hover { transform: scale(1.05) rotate(5deg); }
 
         /* نوتیفیکیشن‌های شیشه‌ای مدرن */
         #toast-container {
@@ -61,7 +76,6 @@
             to { opacity: 0; }
         }
 
-        /* کادر تایید شیشه‌ای اختصاصی */
         .confirm-modal-overlay {
             position: fixed;
             top:0; left:0; right:0; bottom:0;
@@ -86,27 +100,28 @@
         }
 
         .glass-card { 
-            background: rgba(255, 255, 255, 0.08); 
-            backdrop-filter: blur(16px); 
-            -webkit-backdrop-filter: blur(16px); 
-            border: 1px solid rgba(255, 255, 255, 0.18); 
-            border-radius: 20px; 
+            background: rgba(255, 255, 255, 0.06); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px); 
+            border: 1px solid rgba(255, 255, 255, 0.15); 
+            border-radius: 24px; 
             padding: 25px; 
             max-width: 550px; 
             margin: 20px auto; 
             text-align: right; 
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45);
             position: relative;
         }
 
         .brand-header {
             text-align: center;
-            font-size: 24px;
-            font-weight: 800;
-            background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+            font-size: 26px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, #fbbf24 0%, #38bdf8 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .top-bar {
@@ -128,7 +143,7 @@
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
             padding: 6px 12px;
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 20px;
             transition: 0.3s;
         }
@@ -157,7 +172,7 @@
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
             padding: 4px 12px;
-            border-radius: 10px;
+            border-radius: 12px;
             color: white;
             transition: 0.3s;
         }
@@ -166,23 +181,23 @@
         .drawer-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(4px);
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(6px);
             z-index: 99;
             display: none;
         }
 
         .drawer-menu {
             position: fixed;
-            top: 0; right: -280px;
-            width: 280px; height: 100vh;
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(20px);
+            top: 0; right: -290px;
+            width: 290px; height: 100vh;
+            background: rgba(15, 23, 42, 0.96);
+            backdrop-filter: blur(24px);
             border-left: 1px solid rgba(255, 255, 255, 0.15);
             z-index: 100;
             padding: 20px;
-            box-shadow: -5px 0 25px rgba(0,0,0,0.5);
-            transition: right 0.3s ease;
+            box-shadow: -5px 0 30px rgba(0,0,0,0.6);
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-align: right;
             overflow-y: auto;
         }
@@ -208,7 +223,7 @@
         .drawer-item {
             padding: 12px;
             margin: 8px 0;
-            border-radius: 10px;
+            border-radius: 12px;
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(255,255,255,0.1);
             cursor: pointer;
@@ -219,7 +234,7 @@
             font-weight: 600;
             position: relative;
         }
-        .drawer-item:hover { background: rgba(56, 189, 248, 0.2); border-color: #38bdf8; }
+        .drawer-item:hover { background: rgba(251, 191, 36, 0.2); border-color: #fbbf24; }
 
         h2, h3 { text-align: center; color: #ffffff; margin-top: 0; font-weight: 700; }
         
@@ -239,9 +254,9 @@
         input::placeholder, textarea::placeholder { color: #94a3b8; }
         
         input:focus, textarea:focus {
-            border-color: #38bdf8;
+            border-color: #fbbf24;
             background: rgba(255, 255, 255, 0.12);
-            box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+            box-shadow: 0 0 14px rgba(251, 191, 36, 0.3);
         }
 
         button { 
@@ -280,42 +295,44 @@
             background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.25) 100%);
             border: 2px solid #fbbf24;
             padding: 18px;
-            border-radius: 16px;
+            border-radius: 18px;
             text-align: center;
             margin-bottom: 25px;
-            box-shadow: 0 0 20px rgba(251, 191, 36, 0.2);
+            box-shadow: 0 0 25px rgba(251, 191, 36, 0.25);
         }
         .big-star-title { font-size: 14px; color: #fef08a; font-weight: bold; }
-        .big-star-count { font-size: 32px; color: #fbbf24; font-weight: 800; text-shadow: 0 0 10px rgba(251, 191, 36, 0.5); }
+        .big-star-count { font-size: 34px; color: #fbbf24; font-weight: 900; text-shadow: 0 0 12px rgba(251, 191, 36, 0.6); }
 
         .glass-item { 
             background: rgba(255, 255, 255, 0.05); 
-            border: 1px solid rgba(255, 255, 255, 0.1); 
-            padding: 15px; 
-            border-radius: 14px; 
-            margin-bottom: 12px; 
+            border: 1px solid rgba(255, 255, 255, 0.12); 
+            padding: 16px; 
+            border-radius: 16px; 
+            margin-bottom: 14px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
         .glass-item img { 
             width: 100%; 
-            max-height: 220px; 
+            max-height: 230px; 
             object-fit: cover; 
-            border-radius: 10px; 
+            border-radius: 12px; 
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
         .flex-btn { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
         .flex-btn button { flex: 1; min-width: 90px; padding: 8px; font-size: 12px; }
 
         .stats-box { 
-            background: rgba(56, 189, 248, 0.1); 
-            border: 1px solid rgba(56, 189, 248, 0.2); 
-            padding: 12px; 
-            border-radius: 12px; 
+            background: rgba(251, 191, 36, 0.1); 
+            border: 1px solid rgba(251, 191, 36, 0.25); 
+            padding: 14px; 
+            border-radius: 14px; 
             text-align: center; 
             font-size: 13px; 
             font-weight: 700; 
             margin-bottom: 18px; 
-            color: #38bdf8;
+            color: #fbbf24;
         }
 
         .status-badge {
@@ -351,7 +368,7 @@
     <!-- منوی کشویی کاربر -->
     <div id="user-drawer" class="drawer-menu">
         <div class="drawer-header">
-            <b>منوی کاربر</b>
+            <b>منوی Extera shop</b>
             <span class="drawer-close" onclick="closeDrawer()">✕</span>
         </div>
         <div class="drawer-item" onclick="switchUserTab('home')">🏠 صفحه اصلی</div>
@@ -372,7 +389,7 @@
     <!-- منوی کشویی ادمین -->
     <div id="admin-drawer" class="drawer-menu">
         <div class="drawer-header">
-            <b>منوی مدیریت</b>
+            <b>منوی مدیریت Extera</b>
             <span class="drawer-close" onclick="closeDrawer()">✕</span>
         </div>
         <div class="drawer-item" onclick="switchAdminTab('home')">🏠 صفحه اصلی</div>
@@ -390,7 +407,8 @@
 
     <!-- صفحه ورود و ثبت نام -->
     <div id="auth-section" class="glass-card">
-        <div class="brand-header">🧠 فروشگاه هوش مدرن</div>
+        <img src="logo.png" onerror="this.onerror=null; this.src='https://via.placeholder.com/100/1e1b4b/fbbf24?text=Extera';" alt="Extera Shop Logo" class="logo-circle">
+        <div class="brand-header">Extera shop</div>
         <h2 id="auth-title">ورود به حساب کاربری</h2>
         <input type="text" id="username" placeholder="نام کاربری">
         <input type="password" id="password" placeholder="رمز عبور">
@@ -409,7 +427,10 @@
                     <span id="top-unread-badge" class="unread-badge hidden">0</span>
                 </div>
             </div>
-            <div class="brand-header" style="margin:0; font-size:18px;">هوش مدرن</div>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <img src="logo.png" onerror="this.onerror=null; this.src='https://via.placeholder.com/40/1e1b4b/fbbf24?text=E';" style="width:35px; height:35px; border-radius:50%; border:1px solid #fbbf24;">
+                <div class="brand-header" style="margin:0; font-size:18px;">Extera shop</div>
+            </div>
         </div>
 
         <div id="tab-user-home">
@@ -471,7 +492,10 @@
             <div class="top-icons">
                 <span class="hamburger-btn" onclick="openAdminDrawer()">☰</span>
             </div>
-            <div class="brand-header" style="margin:0; font-size:18px;">مدیریت هوش مدرن</div>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <img src="logo.png" onerror="this.onerror=null; this.src='https://via.placeholder.com/40/1e1b4b/fbbf24?text=E';" style="width:35px; height:35px; border-radius:50%; border:1px solid #fbbf24;">
+                <div class="brand-header" style="margin:0; font-size:18px;">مدیریت Extera shop</div>
+            </div>
         </div>
 
         <div id="tab-admin-home">
@@ -493,7 +517,7 @@
 
         <div id="tab-admin-giftCodes" class="hidden">
             <h3>➕ ایجاد کد هدیه جدید</h3>
-            <input type="text" id="gift-code-input" placeholder="عنوان کد هدیه (مثلاً: NOROOZ1403)">
+            <input type="text" id="gift-code-input" placeholder="عنوان کد هدیه (مثلاً: EXTERA100)">
             <input type="number" id="gift-stars-input" placeholder="تعداد ستاره هدیه (مثلاً: 20)">
             <input type="number" id="gift-capacity-input" placeholder="ظرفیت تعداد استفاده (مثلاً: 10 نفر - اختیاری)">
             <label style="font-size:12px; color:#cbd5e1; display:block; text-align:right; margin-top:5px;">تاریخ شروع مهلت (اختیاری):</label>
@@ -524,7 +548,7 @@
             <input type="number" id="prod-price" placeholder="قیمت (تعداد ستاره)">
             <input type="text" id="prod-desc" placeholder="توضیحات محصول">
             <input type="text" id="prod-img1" placeholder="لینک تصویر ۱ (پیش‌نمایش قبل خرید - اجباری)">
-            <input type="text" id="prod-img2" placeholder="لینک تصویر ۲ (تصویر اصلی بعد خرید - اجباری)">
+            <input type="text" id="prod-img2" placeholder="لینک تصویر ۲ (تصویر اصلی بعد خرید - اختیاری)">
             <button onclick="addProduct()">افزودن محصول</button>
 
             <hr style="margin: 20px 0; border:0; border-top: 1px solid rgba(255,255,255,0.1);">
@@ -554,7 +578,6 @@
         let allUsersCache = [];
         let allAnnouncementsCache = [];
 
-        // نمایش نوتیفیکیشن مدرن شیشه‌ای
         function showToast(msg, type = 'info') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -564,7 +587,6 @@
             setTimeout(() => { toast.remove(); }, 4000);
         }
 
-        // کادر تایید اختصاصی شیشه‌ای
         function customConfirm(msg, onConfirm) {
             document.getElementById('confirm-modal-msg').innerText = msg;
             const modal = document.getElementById('confirm-modal');
@@ -769,7 +791,7 @@
             announcements.forEach(a => {
                 container.innerHTML += `
                     <div class="glass-item">
-                        <h4 style="margin:0 0 5px 0; color:#38bdf8;">📢 ${a.title}</h4>
+                        <h4 style="margin:0 0 5px 0; color:#fbbf24;">📢 ${a.title}</h4>
                         <span style="font-size:11px; color:#94a3b8;">تاریخ: ${a.date}</span>
                         <p style="margin:8px 0 0 0; line-height:1.6; font-size:14px;">${a.content}</p>
                     </div>
@@ -786,7 +808,7 @@
             document.getElementById('user-stars-big').innerText = currentUser.stars + ' ستاره';
 
             if(!products || products.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:#94a3b8;">هنوز محصولی در فروشگاه ثبت نشده است.</p>';
+                container.innerHTML = '<p style="text-align:center; color:#94a3b8;">هنوز محصولی در Extera shop ثبت نشده است.</p>';
                 return;
             }
 
@@ -868,7 +890,7 @@
                         <b>تصویر اصلی آماده دانلود است:</b><br>
                         <div style="margin-top:10px;">
                             <img src="${data.secretImage}" style="width:100%; border-radius:12px; border:2px solid #10b981; margin-bottom:10px;">
-                            <a href="${data.secretImage}" target="_blank" download="ai-image.jpg" style="display:block; text-decoration:none;">
+                            <a href="${data.secretImage}" target="_blank" download="extera-image.jpg" style="display:block; text-decoration:none;">
                                 <button class="btn-blue">💾 ذخیره و دانلود تصویر اصلی</button>
                             </a>
                             <p style="color:#ef4444; font-size:12px; margin-top:8px; text-align:center;">🔒 این تصویر برای مراجعات بعدی قفل گردید.</p>
@@ -915,7 +937,7 @@
                     <div class="glass-item">
                         <b>عنوان:</b> ${t.title} <span class="status-badge status-pending" style="float:left;">${t.status}</span><br>
                         <b>پیام شما:</b> ${t.message}<br>
-                        ${t.adminReply ? `<div style="background:rgba(56,189,248,0.15); padding:8px; border-radius:8px; margin-top:8px;"><b>پاسخ پشتیبانی:</b> ${t.adminReply}</div>` : ''}
+                        ${t.adminReply ? `<div style="background:rgba(251,191,36,0.15); padding:8px; border-radius:8px; margin-top:8px;"><b>پاسخ پشتیبانی:</b> ${t.adminReply}</div>` : ''}
                     </div>
                 `;
             });
@@ -1236,7 +1258,7 @@
             const previewImage = document.getElementById('prod-img1').value.trim();
             const secretImage = document.getElementById('prod-img2').value.trim();
 
-            if(!name || !price || !previewImage || !secretImage) return showToast('نام، قیمت، لینک تصویر ۱ و ۲ اجباری هستند.', 'error');
+            if(!name || !price || !previewImage) return showToast('نام، قیمت و لینک تصویر اول (پیش‌نمایش) اجباری هستند.', 'error');
 
             const res = await fetch('/api/admin/add-product', {
                 method: 'POST',
@@ -1294,4 +1316,4 @@
         }
     </script>
 </body>
-            </html>
+                </html>
