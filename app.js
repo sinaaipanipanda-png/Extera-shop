@@ -130,7 +130,7 @@ app.post('/api/buy', (req, res) => {
         productName: product.name,
         price: product.price,
         previewImage: product.previewImage,
-        secretImage: product.secretImage,
+        secretImage: product.secretImage || product.previewImage,
         downloaded: false,
         status: 'در انتظار',
         date: new Date().toLocaleDateString('fa-IR')
@@ -290,10 +290,11 @@ app.post('/api/admin/set-stars', (req, res) => {
     }
 });
 
+// ثبت محصول با تصویر اول اجباری و تصویر دوم اختیاری
 app.post('/api/admin/add-product', (req, res) => {
     const { name, price, description, previewImage, secretImage } = req.body;
-    if(!name || !price || !previewImage || !secretImage) {
-        return res.status(400).json({ error: 'نام، قیمت، تصویر پیش‌نمایش و تصویر اصلی همگی اجباری هستند.' });
+    if(!name || !price || !previewImage) {
+        return res.status(400).json({ error: 'نام، قیمت و تصویر اول (پیش‌نمایش) اجباری هستند.' });
     }
 
     const db = getDB();
@@ -305,11 +306,11 @@ app.post('/api/admin/add-product', (req, res) => {
         price: Number(price),
         description: description || '',
         previewImage,
-        secretImage
+        secretImage: secretImage || previewImage // اگر دوم خالی باشد، همان اولی را می‌گذارد
     };
     db.products.push(newProduct);
     saveDB(db);
-    res.json({ message: 'محصول هوش مصنوعی با موفقیت اضافه شد.' });
+    res.json({ message: 'محصول با موفقیت اضافه شد.' });
 });
 
 app.post('/api/admin/create-gift-code', (req, res) => {
