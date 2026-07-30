@@ -1,6 +1,8 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const https = require('https');
+const http = require('http');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -63,9 +65,24 @@ function saveDB(data) {
 
 const BAN_MESSAGE = 'حساب شما به دلایل مختلف ، به حالت تعلیق در آمده ، برای تجدید نظر ، به آیدی @panda009822 در سروش پلاس مراجعه فرمائید.';
 
+// ---------------- سیستم پینگ خودکار برای بیدار نگه داشتن ۲۴ ساعته رندر ----------------
+app.get('/api/ping', (req, res) => {
+    res.status(200).send('OK');
+});
+
+// پینگ خودکار هر ۵ دقیقه یک‌بار به خودش
+setInterval(() => {
+    const siteUrl = process.env.RENDER_EXTERNAL_URL;
+    if (siteUrl) {
+        const protocol = siteUrl.startsWith('https') ? https : http;
+        protocol.get(`${siteUrl}/api/ping`, (res) => {
+            console.log('Self-ping sent to keep Render awake 24/7');
+        }).on('error', (err) => {});
+    }
+}, 5 * 60 * 1000);
+
 // ---------------- ای‌پی‌آی‌های عمومی و کاربران ----------------
 
-// دریافت تنظیمات نام و لوگوی سایت
 app.get('/api/settings', (req, res) => {
     const db = getDB();
     res.json(db.settings || { storeName: 'Extera shop', logoUrl: '' });
@@ -164,7 +181,7 @@ app.post('/api/buy', (req, res) => {
 app.post('/api/user/download-image', (req, res) => {
     const { orderId, userId } = req.body;
     const db = getDB();
-    const order = (db.orders || []).filter(o => o.id === orderId && o.userId === userId)[0];
+    const order = (db.orders || []).find(o => o.id === orderId && o.userId === userId);
 
     if(!order) return res.status(404).json({ error: 'سفارش یافت نشد.' });
     if(order.downloaded) return res.status(400).json({ error: 'این محتوا قبلاً ۱ بار دریافت شده و قفل گردیده است.' });
@@ -261,7 +278,6 @@ app.get('/api/user/tickets', (req, res) => {
 
 // ---------------- ای‌پی‌آی‌های مدیریت ----------------
 
-// ویرایش نام و لوگوی سایت
 app.post('/api/admin/settings', (req, res) => {
     const { storeName, logoUrl } = req.body;
     if(!storeName) return res.status(400).json({ error: 'نام فروشگاه الزامی است.' });
