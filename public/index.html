@@ -361,7 +361,6 @@
 
     <div id="drawer-overlay" class="drawer-overlay" onclick="closeDrawer()"></div>
 
-    <!-- منوی کشویی کاربر -->
     <div id="user-drawer" class="drawer-menu">
         <div class="drawer-header">
             <b class="store-name-text">منوی کاربر</b>
@@ -382,10 +381,9 @@
         </div>
     </div>
 
-    <!-- منوی کشویی ادمین -->
     <div id="admin-drawer" class="drawer-menu">
         <div class="drawer-header">
-            <b>منوی مدیریت</b>
+            <b>منوی مدیریت Extera</b>
             <span class="drawer-close" onclick="closeDrawer()">✕</span>
         </div>
         <div class="drawer-item" onclick="switchAdminTab('home')">🏠 صفحه اصلی</div>
@@ -402,7 +400,6 @@
         </div>
     </div>
 
-    <!-- صفحه ورود و ثبت نام -->
     <div id="auth-section" class="glass-card">
         <img id="site-logo-img" src="logo.png" onerror="this.onerror=null; this.src='https://via.placeholder.com/100/1e1b4b/fbbf24?text=Extera';" alt="Logo" class="logo-circle">
         <div class="brand-header store-name-text">Extera shop</div>
@@ -414,7 +411,6 @@
         <p id="auth-msg" style="color: #f87171; text-align: center; font-weight: bold; line-height: 1.6;"></p>
     </div>
 
-    <!-- پنل اصلی کاربر -->
     <div id="user-section" class="glass-card hidden">
         <div class="top-bar">
             <div class="top-icons">
@@ -483,7 +479,6 @@
         </div>
     </div>
 
-    <!-- پنل اصلی مدیریت (ادمین) -->
     <div id="admin-section" class="glass-card hidden" style="max-width: 650px;">
         <div class="top-bar">
             <div class="top-icons">
@@ -501,7 +496,6 @@
             <div id="admin-stats" class="stats-box">در حال بارگذاری آمار...</div>
         </div>
 
-        <!-- تب تنظیمات نام و لوگوی سایت -->
         <div id="tab-admin-settings" class="hidden">
             <h3>⚙️ تنظیمات نام و لوگوی سایت</h3>
             <label style="font-size:12px; color:#cbd5e1; display:block; text-align:right; margin-top:5px;">نام فروشگاه:</label>
@@ -585,7 +579,6 @@
         let allUsersCache = [];
         let allAnnouncementsCache = [];
 
-        // دریافت و اعمال زنده لوگو و نام سایت
         async function fetchSiteSettings() {
             try {
                 const res = await fetch('/api/settings');
