@@ -236,22 +236,27 @@
 
         h2, h3 { text-align: center; color: #ffffff; margin-top: 0; font-weight: 700; }
         
-        input, button, textarea { 
+        input, select, button, textarea { 
             width: 100%; 
             padding: 12px 16px; 
             margin: 10px 0; 
             border-radius: 12px; 
             border: 1px solid rgba(255, 255, 255, 0.2); 
             font-size: 14px; 
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(15, 23, 42, 0.8);
             color: #fff;
             outline: none;
             transition: all 0.3s ease;
         }
 
+        select option {
+            background: #1e1b4b;
+            color: #fff;
+        }
+
         input::placeholder, textarea::placeholder { color: #94a3b8; }
         
-        input:focus, textarea:focus {
+        input:focus, select:focus, textarea:focus {
             border-color: #fbbf24;
             background: rgba(255, 255, 255, 0.12);
             box-shadow: 0 0 14px rgba(251, 191, 36, 0.3);
@@ -549,7 +554,26 @@
             <input type="number" id="prod-price" placeholder="قیمت (تعداد ستاره)">
             <input type="text" id="prod-desc" placeholder="توضیحات محصول">
             <input type="text" id="prod-img1" placeholder="لینک تصویر/پوستر پیش‌نمایش محصول (اجباری)">
-            <input type="text" id="prod-img2" placeholder="لینک فایل/تصویر اصلی تحویلی بعد خرید (اختیاری)">
+            
+            <label style="font-size:13px; color:#fbbf24; display:block; text-align:right; margin-top:10px; font-weight:bold;">نوع تحویل محصول به خریدار:</label>
+            <select id="prod-delivery-type" onchange="toggleProductDeliveryInputs()">
+                <option value="image">عکس (تصویر اختصاصی ۲)</option>
+                <option value="text">متن / لینک / لایسنس</option>
+                <option value="none">هیچی (خدمات دستی ادمین)</option>
+            </select>
+
+            <div id="prod-input-image-box">
+                <input type="text" id="prod-img2" placeholder="لینک تصویر ۲ اصلی تحویلی بعد خرید (اختیاری)">
+            </div>
+
+            <div id="prod-input-text-box" class="hidden">
+                <textarea id="prod-secret-text" rows="3" placeholder="متن تحویلی بعد خرید (مثلاً: لایسنس، لینک یا کد اکانت)..."></textarea>
+            </div>
+
+            <div id="prod-input-none-box" class="hidden" style="background:rgba(251,191,36,0.1); padding:10px; border-radius:10px; font-size:12px; color:#fef08a;">
+                💡 این محصول خدمات دستی است. پس از خرید خریدار، سفارش روی "در انتظار" باقی می‌ماند تا شما بعد از انجام کار، دستی دکمه "تحویل شد" را بزنید.
+            </div>
+
             <button onclick="addProduct()">افزودن محصول به فروشگاه</button>
 
             <hr style="margin: 20px 0; border:0; border-top: 1px solid rgba(255,255,255,0.1);">
@@ -578,6 +602,17 @@
         let currentUser = null;
         let allUsersCache = [];
         let allAnnouncementsCache = [];
+
+        function toggleProductDeliveryInputs() {
+            const type = document.getElementById('prod-delivery-type').value;
+            document.getElementById('prod-input-image-box').classList.add('hidden');
+            document.getElementById('prod-input-text-box').classList.add('hidden');
+            document.getElementById('prod-input-none-box').classList.add('hidden');
+
+            if(type === 'image') document.getElementById('prod-input-image-box').classList.remove('hidden');
+            if(type === 'text') document.getElementById('prod-input-text-box').classList.remove('hidden');
+            if(type === 'none') document.getElementById('prod-input-none-box').classList.remove('hidden');
+        }
 
         async function fetchSiteSettings() {
             try {
@@ -896,16 +931,21 @@
                 if(o.status === 'تحویل شد') badgeClass = 'status-success';
                 if(o.status === 'رد شد') badgeClass = 'status-rejected';
 
+                let actionHtml = '';
+                if(o.deliveryType === 'none') {
+                    actionHtml = `<p style="color:#fbbf24; font-size:12px; margin-top:8px;">💡 این سفارش مربوط به خدمات دستی است و توسط ادمین انجام و تحویل داده می‌شود.</p>`;
+                } else if(o.downloaded) {
+                    actionHtml = `<p style="color:#ef4444; font-size:12px; margin-top:8px;">🔒 محتوای تحویلی این محصول دریافت شده و برای مراجعات بعدی قفل گردید.</p>`;
+                } else {
+                    actionHtml = `<button style="margin-top:10px;" onclick="downloadSecretImage(${o.id})">📥 دریافت / مشاهده محتوای خریدم</button>`;
+                }
+
                 container.innerHTML += `
                     <div class="glass-item" id="order-card-${o.id}">
                         <b>محصول خریداری شده:</b> ${o.productName} (${o.price} ستاره)<br>
                         <b>تاریخ:</b> ${o.date} <br>
                         <b>وضعیت:</b> <span class="status-badge ${badgeClass}">${o.status}</span><br>
-                        
-                        ${o.downloaded ? 
-                            `<p style="color:#ef4444; font-size:12px; margin-top:8px;">🔒 محتوای تحویلی این محصول دریافت شده و برای مراجعات بعدی قفل گردید.</p>` :
-                            `<button style="margin-top:10px;" onclick="downloadSecretImage(${o.id})">📥 دریافت / مشاهده محتوای خریدم</button>`
-                        }
+                        ${actionHtml}
                     </div>
                 `;
             });
@@ -922,15 +962,27 @@
                 if(res.ok) {
                     showToast('محتوا با موفقیت باز شد!', 'success');
                     const cardBox = document.getElementById(`order-card-${orderId}`);
-                    cardBox.innerHTML = `
-                        <b>محتوای خریداری‌شده آماده دریافت است:</b><br>
-                        <div style="margin-top:10px;">
+                    
+                    let contentHtml = '';
+                    if(data.deliveryType === 'text') {
+                        contentHtml = `
+                            <div style="background:rgba(16,185,129,0.15); border:1px solid #10b981; padding:12px; border-radius:10px; margin-top:10px; font-weight:bold; color:#34d399; word-break:break-all;">
+                                ${data.secretText}
+                            </div>
+                        `;
+                    } else {
+                        contentHtml = `
                             <img src="${data.secretImage}" style="width:100%; border-radius:12px; border:2px solid #10b981; margin-bottom:10px;">
                             <a href="${data.secretImage}" target="_blank" download="extera-file" style="display:block; text-decoration:none;">
                                 <button class="btn-blue">💾 ذخیره و دانلود فایل/عکس اصلی</button>
                             </a>
-                            <p style="color:#ef4444; font-size:12px; margin-top:8px; text-align:center;">🔒 این محتوا برای مراجعات بعدی قفل گردید.</p>
-                        </div>
+                        `;
+                    }
+
+                    cardBox.innerHTML = `
+                        <b>محتوای خریداری‌شده آماده دریافت است:</b><br>
+                        ${contentHtml}
+                        <p style="color:#ef4444; font-size:12px; margin-top:8px; text-align:center;">🔒 این محتوا برای مراجعات بعدی قفل گردید.</p>
                     `;
                 } else {
                     showToast(data.error, 'error');
@@ -1019,6 +1071,7 @@
                     <div class="glass-item">
                         <b>کاربر:</b> ${o.username} <br>
                         <b>محصول:</b> ${o.productName} (${o.price} ستاره)<br>
+                        <b>نوع تحویل:</b> ${o.deliveryType === 'none' ? 'خدمات دستی' : (o.deliveryType === 'text' ? 'متن' : 'عکس')}<br>
                         <b>تاریخ:</b> ${o.date} | <b>دریافت شده:</b> ${o.downloaded ? 'بله' : 'خیر'}<br>
                         <b>وضعیت فعلی:</b> <span class="status-badge ${badgeClass}">${o.status}</span>
                         <div class="flex-btn">
@@ -1172,7 +1225,8 @@
             products.forEach(p => {
                 container.innerHTML += `
                     <div class="glass-item">
-                        <b>${p.name}</b> (${p.price} ستاره)
+                        <b>${p.name}</b> (${p.price} ستاره)<br>
+                        <span style="font-size:12px; color:#cbd5e1;">نوع تحویل: ${p.deliveryType === 'none' ? 'خدمات دستی' : (p.deliveryType === 'text' ? 'متن/کد' : 'عکس')}</span><br>
                         <button class="btn-danger" style="margin-top:8px;" onclick="deleteProduct(${p.id})">حذف این محصول</button>
                     </div>
                 `;
@@ -1292,14 +1346,16 @@
             const price = document.getElementById('prod-price').value.trim();
             const description = document.getElementById('prod-desc').value.trim();
             const previewImage = document.getElementById('prod-img1').value.trim();
+            const deliveryType = document.getElementById('prod-delivery-type').value;
             const secretImage = document.getElementById('prod-img2').value.trim();
+            const secretText = document.getElementById('prod-secret-text').value.trim();
 
             if(!name || !price || !previewImage) return showToast('نام، قیمت و لینک تصویر پیش‌نمایش اجباری هستند.', 'error');
 
             const res = await fetch('/api/admin/add-product', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ name, price, description, previewImage, secretImage })
+                body: JSON.stringify({ name, price, description, previewImage, deliveryType, secretImage, secretText })
             });
             const data = await res.json();
             showToast(data.message || data.error, res.ok ? 'success' : 'error');
@@ -1309,6 +1365,7 @@
                 document.getElementById('prod-desc').value = '';
                 document.getElementById('prod-img1').value = '';
                 document.getElementById('prod-img2').value = '';
+                document.getElementById('prod-secret-text').value = '';
                 loadAdminProducts();
             }
         }
