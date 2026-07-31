@@ -145,7 +145,6 @@ app.get('/api/user/orders', (req, res) => {
     res.json(userOrders);
 });
 
-// خرید محصول با نوع تحویل مشخص
 app.post('/api/buy', (req, res) => {
     const { userId, productId } = req.body;
     const db = getDB();
@@ -165,11 +164,11 @@ app.post('/api/buy', (req, res) => {
         productName: product.name,
         price: product.price,
         previewImage: product.previewImage,
-        deliveryType: product.deliveryType || 'image', // 'image' | 'text' | 'none'
+        deliveryType: product.deliveryType || 'image',
         secretImage: product.secretImage || product.previewImage,
         secretText: product.secretText || '',
         downloaded: false,
-        status: 'در انتظار', // همه سفارش‌ها در ابتدا "در انتظار" هستند
+        status: 'در انتظار',
         date: new Date().toLocaleDateString('fa-IR')
     };
 
@@ -180,7 +179,6 @@ app.post('/api/buy', (req, res) => {
     res.json({ message: 'خرید با موفقیت انجام شد.', remainingStars: user.stars });
 });
 
-// دریافت و مشاهده محتوای تحویلی بعد خرید
 app.post('/api/user/download-image', (req, res) => {
     const { orderId, userId } = req.body;
     const db = getDB();
@@ -188,7 +186,6 @@ app.post('/api/user/download-image', (req, res) => {
 
     if(!order) return res.status(404).json({ error: 'سفارش یافت نشد.' });
     
-    // اگر نوع تحویل "هیچی" باشد، نباید اتوماتیک تغییر وضعیت دهد
     if(order.deliveryType === 'none') {
         return res.status(400).json({ error: 'این سفارش مربوط به خدمات دستی است و پس از انجام توسط ادمین تحویل داده می‌شود.' });
     }
@@ -196,7 +193,7 @@ app.post('/api/user/download-image', (req, res) => {
     if(order.downloaded) return res.status(400).json({ error: 'این محتوا قبلاً ۱ بار دریافت شده و قفل گردیده است.' });
 
     order.downloaded = true;
-    order.status = 'تحویل شد'; // اتوماتیک تحویل شد فقط برای عکس یا متن
+    order.status = 'تحویل شد';
     saveDB(db);
 
     res.json({ 
@@ -261,34 +258,64 @@ app.post('/api/user/update-profile', (req, res) => {
     }
 });
 
+// ایجاد تیکت جدید با پیام اولیه
 app.post('/api/user/tickets', (req, res) => {
     const { userId, username, title, message } = req.body;
     if(!title || !message) return res.status(400).json({ error: 'عنوان و متن پیام الزامی است.' });
 
     const db = getDB();
+    const nowStr = new Date().toLocaleString('fa-IR');
     const newTicket = {
         id: Date.now(),
         userId,
         username,
         title,
-        message,
-        adminReply: '',
         status: 'در حال بررسی',
-        date: new Date().toLocaleDateString('fa-IR')
+        date: new Date().toLocaleDateString('fa-IR'),
+        messages: [
+            { sender: 'user', username, text: message, date: nowStr }
+        ]
     };
 
     if(!db.tickets) db.tickets = [];
     db.tickets.push(newTicket);
     saveDB(db);
 
-    res.json({ message: 'تیکت با موفقیت ارسال شد.' });
+    res.json({ message: 'تیکت با موفقیت ایجاد شد.' });
 });
 
+// دریافت لیست تیکت‌های یک کاربر
 app.get('/api/user/tickets', (req, res) => {
     const userId = Number(req.query.userId);
     const db = getDB();
     const userTickets = (db.tickets || []).filter(t => t.userId === userId);
     res.json(userTickets);
+});
+
+// ارسال پیام در چت تیکت (هم کاربر و هم ادمین)
+app.post('/api/tickets/send-message', (req, res) => {
+    const { ticketId, sender, username, text } = req.body;
+    if(!text) return res.status(400).json({ error: 'متن پیام الزامی است.' });
+
+    const db = getDB();
+    const ticket = (db.tickets || []).find(t => t.id === ticketId);
+
+    if(!ticket) return res.status(404).json({ error: 'تیکت یافت نشد.' });
+    if(ticket.status === 'بسته شده') return res.status(400).json({ error: 'این تیکت بسته شده است و امکان ارسال پیام وجود ندارد.' });
+
+    if(!ticket.messages) ticket.messages = [];
+    ticket.messages.push({
+        sender, // 'user' یا 'admin'
+        username,
+        text,
+        date: new Date().toLocaleString('fa-IR')
+    });
+
+    if(sender === 'admin') ticket.status = 'پاسخ داده شد';
+    if(sender === 'user') ticket.status = 'در حال بررسی';
+
+    saveDB(db);
+    res.json({ message: 'پیام ارسال شد.', ticket });
 });
 
 // ---------------- ای‌پی‌آی‌های مدیریت ----------------
@@ -354,7 +381,6 @@ app.post('/api/admin/set-stars', (req, res) => {
     }
 });
 
-// افزودن محصول جدید با نوع تحویل مشخص (عکس، متن، یا هیچی)
 app.post('/api/admin/add-product', (req, res) => {
     const { name, price, description, previewImage, deliveryType, secretImage, secretText } = req.body;
     if(!name || !price || !previewImage) {
@@ -370,7 +396,7 @@ app.post('/api/admin/add-product', (req, res) => {
         price: Number(price),
         description: description || '',
         previewImage,
-        deliveryType: deliveryType || 'image', // 'image' | 'text' | 'none'
+        deliveryType: deliveryType || 'image',
         secretImage: secretImage || previewImage,
         secretText: secretText || ''
     };
@@ -453,12 +479,27 @@ app.post('/api/admin/delete-user', (req, res) => {
     res.json({ message: 'عضویت کاربر با موفقیت لغو و حسابش حذف گردید.' });
 });
 
+// بستن تیکت بدون حذف (تغییر وضعیت به "بسته شده")
 app.post('/api/admin/close-ticket', (req, res) => {
+    const { ticketId } = req.body;
+    const db = getDB();
+    const ticket = (db.tickets || []).find(t => t.id === ticketId);
+    if(ticket) {
+        ticket.status = 'بسته شده';
+        saveDB(db);
+        res.json({ message: 'تیکت با موفقیت بسته شد.' });
+    } else {
+        res.status(404).json({ error: 'تیکت یافت نشد.' });
+    }
+});
+
+// حذف کامل تیکت از دیتابیس
+app.post('/api/admin/delete-ticket', (req, res) => {
     const { ticketId } = req.body;
     const db = getDB();
     db.tickets = (db.tickets || []).filter(t => t.id !== ticketId);
     saveDB(db);
-    res.json({ message: 'تیکت بسته شد و از سیستم حذف گردید.' });
+    res.json({ message: 'تیکت با موفقیت حذف گردید.' });
 });
 
 app.post('/api/admin/toggle-ban', (req, res) => {
@@ -501,20 +542,6 @@ app.post('/api/admin/delete-order', (req, res) => {
     db.orders = (db.orders || []).filter(o => o.id !== orderId);
     saveDB(db);
     res.json({ message: 'سفارش با موفقیت حذف شد.' });
-});
-
-app.post('/api/admin/reply-ticket', (req, res) => {
-    const { ticketId, reply, status } = req.body;
-    const db = getDB();
-    const ticket = (db.tickets || []).find(t => t.id === ticketId);
-    if(ticket) {
-        ticket.adminReply = reply;
-        ticket.status = status || 'پاسخ داده شد';
-        saveDB(db);
-        res.json({ message: 'پاسخ ارسال شد.' });
-    } else {
-        res.status(404).json({ error: 'تیکت یافت نشد.' });
-    }
 });
 
 app.listen(PORT, () => {
