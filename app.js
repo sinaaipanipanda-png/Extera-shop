@@ -70,7 +70,6 @@ app.get('/api/ping', (req, res) => {
     res.status(200).send('OK');
 });
 
-// پینگ خودکار هر ۵ دقیقه یک‌بار به خودش
 setInterval(() => {
     const siteUrl = process.env.RENDER_EXTERNAL_URL;
     if (siteUrl) {
@@ -146,6 +145,7 @@ app.get('/api/user/orders', (req, res) => {
     res.json(userOrders);
 });
 
+// خرید محصول با نوع تحویل مشخص
 app.post('/api/buy', (req, res) => {
     const { userId, productId } = req.body;
     const db = getDB();
@@ -165,9 +165,11 @@ app.post('/api/buy', (req, res) => {
         productName: product.name,
         price: product.price,
         previewImage: product.previewImage,
+        deliveryType: product.deliveryType || 'image', // 'image' | 'text' | 'none'
         secretImage: product.secretImage || product.previewImage,
+        secretText: product.secretText || '',
         downloaded: false,
-        status: 'در انتظار',
+        status: 'در انتظار', // همه سفارش‌ها در ابتدا "در انتظار" هستند
         date: new Date().toLocaleDateString('fa-IR')
     };
 
@@ -178,19 +180,32 @@ app.post('/api/buy', (req, res) => {
     res.json({ message: 'خرید با موفقیت انجام شد.', remainingStars: user.stars });
 });
 
+// دریافت و مشاهده محتوای تحویلی بعد خرید
 app.post('/api/user/download-image', (req, res) => {
     const { orderId, userId } = req.body;
     const db = getDB();
     const order = (db.orders || []).find(o => o.id === orderId && o.userId === userId);
 
     if(!order) return res.status(404).json({ error: 'سفارش یافت نشد.' });
+    
+    // اگر نوع تحویل "هیچی" باشد، نباید اتوماتیک تغییر وضعیت دهد
+    if(order.deliveryType === 'none') {
+        return res.status(400).json({ error: 'این سفارش مربوط به خدمات دستی است و پس از انجام توسط ادمین تحویل داده می‌شود.' });
+    }
+
     if(order.downloaded) return res.status(400).json({ error: 'این محتوا قبلاً ۱ بار دریافت شده و قفل گردیده است.' });
 
     order.downloaded = true;
-    order.status = 'تحویل شد';
+    order.status = 'تحویل شد'; // اتوماتیک تحویل شد فقط برای عکس یا متن
     saveDB(db);
 
-    res.json({ message: 'محتوای اصلی آماده مشاهده است.', secretImage: order.secretImage, productName: order.productName });
+    res.json({ 
+        message: 'محتوای اصلی آماده مشاهده است.', 
+        deliveryType: order.deliveryType,
+        secretImage: order.secretImage, 
+        secretText: order.secretText,
+        productName: order.productName 
+    });
 });
 
 app.post('/api/user/redeem-code', (req, res) => {
@@ -339,8 +354,9 @@ app.post('/api/admin/set-stars', (req, res) => {
     }
 });
 
+// افزودن محصول جدید با نوع تحویل مشخص (عکس، متن، یا هیچی)
 app.post('/api/admin/add-product', (req, res) => {
-    const { name, price, description, previewImage, secretImage } = req.body;
+    const { name, price, description, previewImage, deliveryType, secretImage, secretText } = req.body;
     if(!name || !price || !previewImage) {
         return res.status(400).json({ error: 'نام، قیمت و تصویر پیش‌نمایش اجباری هستند.' });
     }
@@ -354,8 +370,11 @@ app.post('/api/admin/add-product', (req, res) => {
         price: Number(price),
         description: description || '',
         previewImage,
-        secretImage: secretImage || previewImage
+        deliveryType: deliveryType || 'image', // 'image' | 'text' | 'none'
+        secretImage: secretImage || previewImage,
+        secretText: secretText || ''
     };
+
     db.products.push(newProduct);
     saveDB(db);
     res.json({ message: 'محصول با موفقیت اضافه شد.' });
