@@ -347,6 +347,50 @@
         .status-pending { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
         .status-success { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
         .status-rejected { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
+
+        .chat-box {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 320px;
+            overflow-y: auto;
+            padding: 10px;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 15px;
+        }
+
+        .chat-bubble {
+            max-width: 80%;
+            padding: 10px 14px;
+            border-radius: 14px;
+            font-size: 13px;
+            line-height: 1.6;
+            word-wrap: break-word;
+        }
+
+        .chat-bubble.user {
+            align-self: flex-start;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            border-bottom-right-radius: 2px;
+        }
+
+        .chat-bubble.admin {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border-bottom-left-radius: 2px;
+        }
+
+        .chat-time {
+            font-size: 10px;
+            opacity: 0.7;
+            display: block;
+            margin-top: 4px;
+            text-align: left;
+        }
     </style>
 </head>
 <body>
@@ -366,6 +410,7 @@
 
     <div id="drawer-overlay" class="drawer-overlay" onclick="closeDrawer()"></div>
 
+    <!-- منوی کشویی کاربر -->
     <div id="user-drawer" class="drawer-menu">
         <div class="drawer-header">
             <b class="store-name-text">منوی کاربر</b>
@@ -380,12 +425,13 @@
         <div class="drawer-item" onclick="switchUserTab('shop')">🛍 فروشگاه (خرید محصول)</div>
         <div class="drawer-item" onclick="switchUserTab('profile')">👤 اطلاعات کاربری و ویرایش</div>
         <div class="drawer-item" onclick="switchUserTab('orders')">📦 سفارش‌های ثبت شده</div>
-        <div class="drawer-item" onclick="switchUserTab('tickets')">💬 پشتیبانی (تیکت)</div>
+        <div class="drawer-item" onclick="switchUserTab('tickets')">💬 مرکز پشتیبانی (تیکت‌ها)</div>
         <div style="margin-top: 30px;">
             <button class="btn-danger" onclick="logout()">خروج از حساب</button>
         </div>
     </div>
 
+    <!-- منوی کشویی ادمین -->
     <div id="admin-drawer" class="drawer-menu">
         <div class="drawer-header">
             <b>منوی مدیریت Extera</b>
@@ -405,6 +451,7 @@
         </div>
     </div>
 
+    <!-- صفحه ورود و ثبت نام -->
     <div id="auth-section" class="glass-card">
         <img id="site-logo-img" src="logo.png" onerror="this.onerror=null; this.src='https://via.placeholder.com/100/1e1b4b/fbbf24?text=Extera';" alt="Logo" class="logo-circle">
         <div class="brand-header store-name-text">Extera shop</div>
@@ -416,6 +463,7 @@
         <p id="auth-msg" style="color: #f87171; text-align: center; font-weight: bold; line-height: 1.6;"></p>
     </div>
 
+    <!-- پنل اصلی کاربر -->
     <div id="user-section" class="glass-card hidden">
         <div class="top-bar">
             <div class="top-icons">
@@ -472,18 +520,39 @@
             <div id="user-orders-list"></div>
         </div>
 
+        <!-- مرکز پشتیبانی کاربر -->
         <div id="tab-user-tickets" class="hidden">
-            <h3>💬 ارتباط با پشتیبانی (تیکت)</h3>
-            <input type="text" id="ticket-title" placeholder="عنوان تیکت">
-            <textarea id="ticket-message" rows="4" placeholder="متن پیام شما..."></textarea>
-            <button onclick="sendTicket()">ارسال تیکت به پشتیبانی</button>
+            <div id="user-tickets-main-view">
+                <h3>💬 به مرکز پشتیبانی خوش آمدید</h3>
+                <button class="btn-blue" style="margin-bottom:20px;" onclick="showNewTicketForm()">➕ ایجاد تیکت جدید</button>
+                <h4 style="text-align:right; color:#fbbf24;">لیست تیکت‌های شما:</h4>
+                <div id="user-tickets-list"></div>
+            </div>
 
-            <hr style="margin: 20px 0; border:0; border-top: 1px solid rgba(255,255,255,0.1);">
-            <h3>تیکت‌های قبلی شما</h3>
-            <div id="user-tickets-list"></div>
+            <div id="user-ticket-create-view" class="hidden">
+                <h3>➕ ایجاد تیکت جدید</h3>
+                <input type="text" id="ticket-title-input" placeholder="عنوان تیکت">
+                <textarea id="ticket-msg-input" rows="4" placeholder="متن پیام شما..."></textarea>
+                <button onclick="createNewTicket()">ثبت و ارسال تیکت</button>
+                <button class="btn-danger" onclick="backToUserTickets()">انصراف و بازگشت</button>
+            </div>
+
+            <div id="user-ticket-chat-view" class="hidden">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <button class="btn-warning" style="width:auto; padding:6px 12px;" onclick="backToUserTickets()">🔙 بازگشت به لیست</button>
+                    <b id="user-chat-title" style="color:#fbbf24;"></b>
+                </div>
+                <div id="user-chat-box" class="chat-box"></div>
+                
+                <div id="user-chat-input-box">
+                    <textarea id="user-chat-msg" rows="2" placeholder="پاسخ خود را بنویسید..."></textarea>
+                    <button class="btn-blue" onclick="sendUserChatMessage()">ارسال پیام</button>
+                </div>
+            </div>
         </div>
     </div>
 
+    <!-- پنل اصلی مدیریت (ادمین) -->
     <div id="admin-section" class="glass-card hidden" style="max-width: 650px;">
         <div class="top-bar">
             <div class="top-icons">
@@ -593,8 +662,27 @@
         </div>
 
         <div id="tab-admin-tickets" class="hidden">
-            <h3>💬 مدیریت تیکت‌های پشتیبانی</h3>
-            <div id="admin-tickets-list"></div>
+            <div id="admin-tickets-main-view">
+                <h3>💬 مدیریت تیکت‌های پشتیبانی</h3>
+                <div id="admin-tickets-list"></div>
+            </div>
+
+            <div id="admin-ticket-chat-view" class="hidden">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <button class="btn-warning" style="width:auto; padding:6px 12px;" onclick="backToAdminTickets()">🔙 بازگشت به لیست</button>
+                    <b id="admin-chat-title" style="color:#fbbf24;"></b>
+                </div>
+                <div id="admin-chat-box" class="chat-box"></div>
+                
+                <div id="admin-chat-input-box">
+                    <textarea id="admin-chat-msg" rows="2" placeholder="پاسخ ادمین..."></textarea>
+                    <div class="flex-btn">
+                        <button onclick="sendAdminChatMessage()">ارسال پاسخ</button>
+                        <button class="btn-warning" onclick="closeAdminTicketFromChat()">🔒 بستن تیکت</button>
+                        <button class="btn-danger" onclick="deleteAdminTicketFromChat()">🗑 حذف تیکت</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -602,6 +690,7 @@
         let currentUser = null;
         let allUsersCache = [];
         let allAnnouncementsCache = [];
+        let activeChatTicketId = null;
 
         function toggleProductDeliveryInputs() {
             const type = document.getElementById('prod-delivery-type').value;
@@ -704,7 +793,7 @@
             if(tab === 'shop') { document.getElementById('tab-user-shop').classList.remove('hidden'); loadProducts(); }
             if(tab === 'profile') { document.getElementById('tab-user-profile').classList.remove('hidden'); loadProfile(); }
             if(tab === 'orders') { document.getElementById('tab-user-orders').classList.remove('hidden'); loadUserOrders(); }
-            if(tab === 'tickets') { document.getElementById('tab-user-tickets').classList.remove('hidden'); loadUserTickets(); }
+            if(tab === 'tickets') { document.getElementById('tab-user-tickets').classList.remove('hidden'); backToUserTickets(); }
         }
 
         function switchAdminTab(tab) {
@@ -727,7 +816,7 @@
             if(tab === 'products') { document.getElementById('tab-admin-products').classList.remove('hidden'); loadAdminProducts(); }
             if(tab === 'users') { document.getElementById('tab-admin-users').classList.remove('hidden'); loadAdminData(); }
             if(tab === 'orders') { document.getElementById('tab-admin-orders').classList.remove('hidden'); loadAdminData(); }
-            if(tab === 'tickets') { document.getElementById('tab-admin-tickets').classList.remove('hidden'); loadAdminTickets(); }
+            if(tab === 'tickets') { document.getElementById('tab-admin-tickets').classList.remove('hidden'); backToAdminTickets(); }
         }
 
         async function register() {
@@ -990,9 +1079,24 @@
             });
         }
 
-        async function sendTicket() {
-            const title = document.getElementById('ticket-title').value.trim();
-            const message = document.getElementById('ticket-message').value.trim();
+        // ---------------- توابع چت تیکت کاربر ----------------
+
+        function backToUserTickets() {
+            document.getElementById('user-tickets-main-view').classList.remove('hidden');
+            document.getElementById('user-ticket-create-view').classList.add('hidden');
+            document.getElementById('user-ticket-chat-view').classList.add('hidden');
+            loadUserTickets();
+        }
+
+        function showNewTicketForm() {
+            document.getElementById('user-tickets-main-view').classList.add('hidden');
+            document.getElementById('user-ticket-create-view').classList.remove('hidden');
+            document.getElementById('user-ticket-chat-view').classList.add('hidden');
+        }
+
+        async function createNewTicket() {
+            const title = document.getElementById('ticket-title-input').value.trim();
+            const message = document.getElementById('ticket-msg-input').value.trim();
             if(!title || !message) return showToast('عنوان و متن پیام را وارد کنید.', 'error');
 
             const res = await fetch('/api/user/tickets', {
@@ -1003,9 +1107,9 @@
             const data = await res.json();
             showToast(data.message || data.error, res.ok ? 'success' : 'error');
             if(res.ok) {
-                document.getElementById('ticket-title').value = '';
-                document.getElementById('ticket-message').value = '';
-                loadUserTickets();
+                document.getElementById('ticket-title-input').value = '';
+                document.getElementById('ticket-msg-input').value = '';
+                backToUserTickets();
             }
         }
 
@@ -1016,19 +1120,84 @@
             container.innerHTML = '';
 
             if(!tickets || tickets.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:#94a3b8;">تیکتی ثبت نشده است.</p>';
+                container.innerHTML = '<p style="text-align:center; color:#94a3b8;">شما هنوز تیکتی ثبت نکرده‌اید.</p>';
                 return;
             }
 
             tickets.forEach(t => {
+                let badgeClass = 'status-pending';
+                if(t.status === 'پاسخ داده شد') badgeClass = 'status-success';
+                if(t.status === 'بسته شده') badgeClass = 'status-rejected';
+
                 container.innerHTML += `
-                    <div class="glass-item">
-                        <b>عنوان:</b> ${t.title} <span class="status-badge status-pending" style="float:left;">${t.status}</span><br>
-                        <b>پیام شما:</b> ${t.message}<br>
-                        ${t.adminReply ? `<div style="background:rgba(251,191,36,0.15); padding:8px; border-radius:8px; margin-top:8px;"><b>پاسخ پشتیبانی:</b> ${t.adminReply}</div>` : ''}
+                    <div class="glass-item" style="cursor:pointer;" onclick="openUserChat(${t.id})">
+                        <b>عنوان:</b> ${t.title} <span class="status-badge ${badgeClass}" style="float:left;">${t.status}</span><br>
+                        <span style="font-size:12px; color:#94a3b8;">تاریخ: ${t.date} | برای مشاهده چت کلیک کنید 💬</span>
                     </div>
                 `;
             });
+        }
+
+        async function openUserChat(ticketId) {
+            activeChatTicketId = ticketId;
+            const res = await fetch(`/api/user/tickets?userId=${currentUser.id}`);
+            const tickets = await res.json();
+            const ticket = tickets.find(t => t.id === ticketId);
+
+            if(!ticket) return showToast('تیکت یافت نشد.', 'error');
+
+            document.getElementById('user-tickets-main-view').classList.add('hidden');
+            document.getElementById('user-ticket-create-view').classList.add('hidden');
+            document.getElementById('user-ticket-chat-view').classList.remove('hidden');
+
+            document.getElementById('user-chat-title').innerText = ticket.title;
+
+            renderChatBubbles('user-chat-box', ticket.messages || []);
+
+            const inputBox = document.getElementById('user-chat-input-box');
+            if(ticket.status === 'بسته شده') {
+                inputBox.innerHTML = '<p style="color:#ef4444; text-align:center; font-weight:bold;">🔒 این تیکت بسته شده است و امکان ارسال پیام جدید وجود ندارد.</p>';
+            } else {
+                inputBox.innerHTML = `
+                    <textarea id="user-chat-msg" rows="2" placeholder="پاسخ خود را بنویسید..."></textarea>
+                    <button class="btn-blue" onclick="sendUserChatMessage()">ارسال پیام</button>
+                `;
+            }
+        }
+
+        async function sendUserChatMessage() {
+            const text = document.getElementById('user-chat-msg').value.trim();
+            if(!text) return showToast('متن پیام را بنویسید.', 'error');
+
+            const res = await fetch('/api/tickets/send-message', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ ticketId: activeChatTicketId, sender: 'user', username: currentUser.username, text })
+            });
+            const data = await res.json();
+            if(res.ok) {
+                renderChatBubbles('user-chat-box', data.ticket.messages || []);
+                document.getElementById('user-chat-msg').value = '';
+            } else {
+                showToast(data.error, 'error');
+            }
+        }
+
+        function renderChatBubbles(containerId, messages) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            messages.forEach(m => {
+                const bubbleClass = m.sender === 'user' ? 'user' : 'admin';
+                const senderName = m.sender === 'admin' ? '🛡 پشتیبانی' : m.username;
+                container.innerHTML += `
+                    <div class="chat-bubble ${bubbleClass}">
+                        <b>${senderName}:</b><br>
+                        ${m.text}
+                        <span class="chat-time">${m.date}</span>
+                    </div>
+                `;
+            });
+            container.scrollTop = container.scrollHeight;
         }
 
         function buyProduct(productId) {
@@ -1047,7 +1216,8 @@
             });
         }
 
-        // توابع ادمین
+        // ---------------- توابع ادمین ----------------
+
         async function loadAdminData() {
             const res = await fetch('/api/admin/data');
             const data = await res.json();
@@ -1081,6 +1251,128 @@
                         </div>
                     </div>
                 `;
+            });
+        }
+
+        function backToAdminTickets() {
+            document.getElementById('admin-tickets-main-view').classList.remove('hidden');
+            document.getElementById('admin-ticket-chat-view').classList.add('hidden');
+            loadAdminTickets();
+        }
+
+        async function loadAdminTickets() {
+            const res = await fetch('/api/admin/data');
+            const data = await res.json();
+            const container = document.getElementById('admin-tickets-list');
+            container.innerHTML = '';
+
+            if(!data.tickets || data.tickets.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#94a3b8;">تیکتی ثبت نشده است.</p>';
+                return;
+            }
+
+            data.tickets.forEach(t => {
+                let badgeClass = 'status-pending';
+                if(t.status === 'پاسخ داده شد') badgeClass = 'status-success';
+                if(t.status === 'بسته شده') badgeClass = 'status-rejected';
+
+                container.innerHTML += `
+                    <div class="glass-item">
+                        <b>کاربر:</b> ${t.username} | <b>عنوان:</b> ${t.title} <span class="status-badge ${badgeClass}">${t.status}</span><br>
+                        <div class="flex-btn">
+                            <button class="btn-blue" onclick="openAdminChat(${t.id})">💬 مشاهده و پاسخ چت</button>
+                            ${t.status !== 'بسته شده' ? `<button class="btn-warning" onclick="closeAdminTicketDirect(${t.id})">🔒 بستن تیکت</button>` : ''}
+                            <button class="btn-danger" onclick="deleteAdminTicketDirect(${t.id})">🗑 حذف تیکت</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        async function openAdminChat(ticketId) {
+            activeChatTicketId = ticketId;
+            const res = await fetch('/api/admin/data');
+            const data = await res.json();
+            const ticket = data.tickets.find(t => t.id === ticketId);
+
+            if(!ticket) return showToast('تیکت یافت نشد.', 'error');
+
+            document.getElementById('admin-tickets-main-view').classList.add('hidden');
+            document.getElementById('admin-ticket-chat-view').classList.remove('hidden');
+
+            document.getElementById('admin-chat-title').innerText = `چت با ${ticket.username} - ${ticket.title}`;
+
+            renderChatBubbles('admin-chat-box', ticket.messages || []);
+        }
+
+        async function sendAdminChatMessage() {
+            const text = document.getElementById('admin-chat-msg').value.trim();
+            if(!text) return showToast('متن پاسخ را بنویسید.', 'error');
+
+            const res = await fetch('/api/tickets/send-message', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ ticketId: activeChatTicketId, sender: 'admin', username: 'پشتیبانی', text })
+            });
+            const data = await res.json();
+            if(res.ok) {
+                renderChatBubbles('admin-chat-box', data.ticket.messages || []);
+                document.getElementById('admin-chat-msg').value = '';
+                showToast('پاسخ ارسال شد.', 'success');
+            } else {
+                showToast(data.error, 'error');
+            }
+        }
+
+        function closeAdminTicketFromChat() {
+            customConfirm('آیا از بستن این تیکت مطمئن هستید؟ تیکت قفل می‌شود اما پاک نمی‌شود.', async () => {
+                const res = await fetch('/api/admin/close-ticket', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ ticketId: activeChatTicketId })
+                });
+                const data = await res.json();
+                showToast(data.message || data.error, res.ok ? 'success' : 'error');
+                if(res.ok) backToAdminTickets();
+            });
+        }
+
+        function closeAdminTicketDirect(ticketId) {
+            customConfirm('آیا از بستن این تیکت مطمئن هستید؟', async () => {
+                const res = await fetch('/api/admin/close-ticket', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ ticketId })
+                });
+                const data = await res.json();
+                showToast(data.message || data.error, res.ok ? 'success' : 'error');
+                if(res.ok) loadAdminTickets();
+            });
+        }
+
+        function deleteAdminTicketFromChat() {
+            customConfirm('آیا از حذف کامل این تیکت از دیتابیس مطمئن هستید؟', async () => {
+                const res = await fetch('/api/admin/delete-ticket', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ ticketId: activeChatTicketId })
+                });
+                const data = await res.json();
+                showToast(data.message || data.error, res.ok ? 'success' : 'error');
+                if(res.ok) backToAdminTickets();
+            });
+        }
+
+        function deleteAdminTicketDirect(ticketId) {
+            customConfirm('آیا از حذف کامل این تیکت مطمئن هستید؟', async () => {
+                const res = await fetch('/api/admin/delete-ticket', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ ticketId })
+                });
+                const data = await res.json();
+                showToast(data.message || data.error, res.ok ? 'success' : 'error');
+                if(res.ok) loadAdminTickets();
             });
         }
 
@@ -1226,64 +1518,10 @@
                 container.innerHTML += `
                     <div class="glass-item">
                         <b>${p.name}</b> (${p.price} ستاره)<br>
-                        <span style="font-size:12px; color:#cbd5e1;">نوع تحویل: ${p.deliveryType === 'none' ? 'خدمات دستی' : (p.deliveryType === 'text' ? 'متن/کد' : 'عکس')}</span><br>
+                        <span style="font-size:12px; color:#cbd5e1;">نوع تحویل: ${p.deliveryType === 'none' ? 'خدمات دستی' : (p.deliveryType === 'text' ? 'متن' : 'عکس')}</span><br>
                         <button class="btn-danger" style="margin-top:8px;" onclick="deleteProduct(${p.id})">حذف این محصول</button>
                     </div>
                 `;
-            });
-        }
-
-        async function loadAdminTickets() {
-            const res = await fetch('/api/admin/data');
-            const data = await res.json();
-            const container = document.getElementById('admin-tickets-list');
-            container.innerHTML = '';
-
-            if(!data.tickets || data.tickets.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:#94a3b8;">تیکتی ثبت نشده است.</p>';
-                return;
-            }
-
-            data.tickets.forEach(t => {
-                container.innerHTML += `
-                    <div class="glass-item">
-                        <b>کاربر:</b> ${t.username} | <b>عنوان:</b> ${t.title}<br>
-                        <b>متن تیکت:</b> ${t.message}<br>
-                        <b>پاسخ فعلی:</b> ${t.adminReply || 'بدون پاسخ'}<br>
-                        <input type="text" id="reply-input-${t.id}" placeholder="پاسخ ادمین..." value="${t.adminReply || ''}">
-                        <div class="flex-btn">
-                            <button onclick="replyTicket(${t.id})">ارسال پاسخ</button>
-                            <button class="btn-danger" onclick="closeTicket(${t.id})">🔒 بستن و حذف تیکت</button>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        async function replyTicket(ticketId) {
-            const reply = document.getElementById(`reply-input-${ticketId}`).value.trim();
-            if(!reply) return showToast('متن پاسخ را وارد کنید.', 'error');
-
-            const res = await fetch('/api/admin/reply-ticket', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ ticketId, reply, status: 'پاسخ داده شد' })
-            });
-            const data = await res.json();
-            showToast(data.message || data.error, res.ok ? 'success' : 'error');
-            if(res.ok) loadAdminTickets();
-        }
-
-        function closeTicket(ticketId) {
-            customConfirm('آیا از بستن و حذف این تیکت مطمئن هستید؟', async () => {
-                const res = await fetch('/api/admin/close-ticket', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ ticketId })
-                });
-                const data = await res.json();
-                showToast(data.message || data.error, res.ok ? 'success' : 'error');
-                if(res.ok) loadAdminTickets();
             });
         }
 
@@ -1409,4 +1647,4 @@
         }
     </script>
 </body>
-    </html>
+</html>
