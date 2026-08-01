@@ -91,10 +91,33 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 20px;
             padding: 25px;
-            max-width: 400px;
+            max-width: 450px;
             width: 100%;
-            text-align: center;
+            text-align: right;
             box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .perm-group {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+        .perm-group label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            margin: 6px 0;
+            cursor: pointer;
+        }
+        .perm-group input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+            cursor: pointer;
         }
 
         .glass-card { 
@@ -391,6 +414,17 @@
             margin-top: 4px;
             text-align: left;
         }
+
+        .role-badge {
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .role-owner { background: rgba(251, 191, 36, 0.2); color: #fbbf24; border: 1px solid #fbbf24; }
+        .role-admin { background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid #38bdf8; }
+        .role-user { background: rgba(148, 163, 184, 0.2); color: #cbd5e1; border: 1px solid #94a3b8; }
     </style>
 </head>
 <body>
@@ -398,7 +432,7 @@
     <div id="toast-container"></div>
 
     <div id="confirm-modal" class="confirm-modal-overlay hidden">
-        <div class="confirm-modal-box">
+        <div class="confirm-modal-box" style="text-align:center;">
             <h3 id="confirm-modal-title" style="margin-bottom:15px;">تایید عملیات</h3>
             <p id="confirm-modal-msg" style="color:#cbd5e1; margin-bottom:20px; font-size:14px;"></p>
             <div class="flex-btn">
@@ -408,9 +442,72 @@
         </div>
     </div>
 
+    <div id="permission-modal" class="confirm-modal-overlay hidden">
+        <div class="confirm-modal-box">
+            <h3 style="margin-bottom:10px;">⚙️ مدیریت دسترسی‌های مدیر</h3>
+            <p id="perm-user-title" style="color:#fbbf24; font-weight:bold; text-align:center; font-size:14px; margin-bottom:15px;"></p>
+            
+            <div class="perm-group">
+                <b style="color:#38bdf8; font-size:13px; display:block; margin-bottom:8px;">🌟 مدیریت کاربران:</b>
+                <label><input type="checkbox" id="p-changeUserStars"> تغییر موجودی ستاره کاربر</label>
+                <label><input type="checkbox" id="p-banUser"> بن کردن کاربر</label>
+                <label><input type="checkbox" id="p-unbanUser"> آنبن کردن کاربر</label>
+                <label><input type="checkbox" id="p-deleteUser"> لغو عضویت (حذف کاربر)</label>
+                <label><input type="checkbox" id="p-promoteAdmin"> ادمین/مدیر کردن کاربر</label>
+            </div>
+
+            <div class="perm-group">
+                <b style="color:#38bdf8; font-size:13px; display:block; margin-bottom:8px;">⚙️ تنظیمات فروشگاه:</b>
+                <label><input type="checkbox" id="p-changeStoreName"> عوض کردن اسم فروشگاه</label>
+                <label><input type="checkbox" id="p-changeStoreLogo"> عوض کردن لوگوی فروشگاه</label>
+            </div>
+
+            <div class="perm-group">
+                <b style="color:#38bdf8; font-size:13px; display:block; margin-bottom:8px;">💾 پشتیبان‌گیری:</b>
+                <label><input type="checkbox" id="p-copyBackup"> کپی کدر پشتیبان</label>
+                <label><input type="checkbox" id="p-restoreBackup"> پیست کدر پشتیبان</label>
+            </div>
+
+            <div class="perm-group">
+                <b style="color:#38bdf8; font-size:13px; display:block; margin-bottom:8px;">🎁 کدهای هدیه:</b>
+                <label><input type="checkbox" id="p-createGiftCode"> ایجاد کد هدیه</label>
+                <label><input type="checkbox" id="p-expireGiftCode"> منقضی کردن کد هدیه</label>
+            </div>
+
+            <div class="perm-group">
+                <b style="color:#38bdf8; font-size:13px; display:block; margin-bottom:8px;">📢 اطلاعیه‌ها:</b>
+                <label><input type="checkbox" id="p-createAnnouncement"> ایجاد اطلاعیه</label>
+                <label><input type="checkbox" id="p-deleteAnnouncement"> حذف اطلاعیه</label>
+            </div>
+
+            <div class="perm-group">
+                <b style="color:#38bdf8; font-size:13px; display:block; margin-bottom:8px;">🛍 محصولات:</b>
+                <label><input type="checkbox" id="p-createProduct"> ایجاد محصول</label>
+                <label><input type="checkbox" id="p-deleteProduct"> حذف محصول</label>
+            </div>
+
+            <div class="perm-group">
+                <b style="color:#38bdf8; font-size:13px; display:block; margin-bottom:8px;">📦 سفارش‌ها:</b>
+                <label><input type="checkbox" id="p-updateOrderStatus"> تغییر وضعیت و حذف سفارش‌ها</label>
+            </div>
+
+            <div class="perm-group">
+                <b style="color:#38bdf8; font-size:13px; display:block; margin-bottom:8px;">💬 تیکت‌ها:</b>
+                <label><input type="checkbox" id="p-replyTicket"> پاسخگویی به تیکت</label>
+                <label><input type="checkbox" id="p-closeTicket"> بستن تیکت</label>
+                <label><input type="checkbox" id="p-deleteTicket"> حذف تیکت</label>
+            </div>
+
+            <div class="flex-btn" style="margin-top:15px;">
+                <button onclick="savePermissions()">💾 ذخیره دسترسی‌ها و ارتقا به مدیر</button>
+                <button class="btn-warning" onclick="demoteAdmin()">عزل از مدیر (کاربر عادی)</button>
+                <button class="btn-danger" onclick="closePermissionModal()">انصراف</button>
+            </div>
+        </div>
+    </div>
+
     <div id="drawer-overlay" class="drawer-overlay" onclick="closeDrawer()"></div>
 
-    <!-- منوی کشویی کاربر -->
     <div id="user-drawer" class="drawer-menu">
         <div class="drawer-header">
             <b class="store-name-text">منوی کاربر</b>
@@ -431,7 +528,6 @@
         </div>
     </div>
 
-    <!-- منوی کشویی ادمین -->
     <div id="admin-drawer" class="drawer-menu">
         <div class="drawer-header">
             <b>منوی مدیریت Extera</b>
@@ -451,7 +547,6 @@
         </div>
     </div>
 
-    <!-- صفحه ورود و ثبت نام -->
     <div id="auth-section" class="glass-card">
         <img id="site-logo-img" src="logo.png" onerror="this.onerror=null; this.src='https://via.placeholder.com/100/1e1b4b/fbbf24?text=Extera';" alt="Logo" class="logo-circle">
         <div class="brand-header store-name-text">Extera shop</div>
@@ -463,7 +558,6 @@
         <p id="auth-msg" style="color: #f87171; text-align: center; font-weight: bold; line-height: 1.6;"></p>
     </div>
 
-    <!-- پنل اصلی کاربر -->
     <div id="user-section" class="glass-card hidden">
         <div class="top-bar">
             <div class="top-icons">
@@ -520,7 +614,6 @@
             <div id="user-orders-list"></div>
         </div>
 
-        <!-- مرکز پشتیبانی کاربر -->
         <div id="tab-user-tickets" class="hidden">
             <div id="user-tickets-main-view">
                 <h3>💬 به مرکز پشتیبانی خوش آمدید</h3>
@@ -552,7 +645,6 @@
         </div>
     </div>
 
-    <!-- پنل اصلی مدیریت (ادمین) -->
     <div id="admin-section" class="glass-card hidden" style="max-width: 650px;">
         <div class="top-bar">
             <div class="top-icons">
@@ -691,6 +783,22 @@
         let allUsersCache = [];
         let allAnnouncementsCache = [];
         let activeChatTicketId = null;
+        let selectedPermUserId = null;
+
+        const allPermissionKeys = [
+            'changeUserStars', 'banUser', 'unbanUser', 'deleteUser', 'promoteAdmin',
+            'changeStoreName', 'changeStoreLogo', 'copyBackup', 'restoreBackup',
+            'createGiftCode', 'expireGiftCode', 'createAnnouncement', 'deleteAnnouncement',
+            'createProduct', 'deleteProduct', 'updateOrderStatus', 'replyTicket',
+            'closeTicket', 'deleteTicket'
+        ];
+
+        function hasPerm(permKey) {
+            if(!currentUser) return false;
+            if(currentUser.role === 'owner' || currentUser.username === 'admin') return true;
+            if(!currentUser.isAdmin) return false;
+            return !!(currentUser.permissions && currentUser.permissions[permKey]);
+        }
 
         function toggleProductDeliveryInputs() {
             const type = document.getElementById('prod-delivery-type').value;
@@ -729,7 +837,7 @@
             const res = await fetch('/api/admin/settings', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ storeName, logoUrl })
+                body: JSON.stringify({ adminUserId: currentUser.id, storeName, logoUrl })
             });
             const data = await res.json();
             showToast(data.message || data.error, res.ok ? 'success' : 'error');
@@ -885,15 +993,27 @@
         }
 
         async function getBackup() {
-            const res = await fetch('/api/admin/backup');
+            if(!hasPerm('copyBackup')) return showToast('شما دسترسی انجام این کار را ندارید.', 'error');
+
+            const res = await fetch('/api/admin/backup', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ adminUserId: currentUser.id })
+            });
             const data = await res.json();
-            const jsonString = JSON.stringify(data, null, 2);
-            document.getElementById('backup-text').value = jsonString;
-            navigator.clipboard.writeText(jsonString);
-            showToast('اطلاعات کپی شد! متن را ذخیره کنید.', 'success');
+            if(res.ok) {
+                const jsonString = JSON.stringify(data, null, 2);
+                document.getElementById('backup-text').value = jsonString;
+                navigator.clipboard.writeText(jsonString);
+                showToast('اطلاعات کپی شد! متن را ذخیره کنید.', 'success');
+            } else {
+                showToast(data.error, 'error');
+            }
         }
 
         async function restoreBackup() {
+            if(!hasPerm('restoreBackup')) return showToast('شما دسترسی انجام این کار را ندارید.', 'error');
+
             const rawText = document.getElementById('backup-text').value.trim();
             if(!rawText) return showToast('ابتدا کد کپی‌شده را پیست کنید.', 'error');
 
@@ -902,7 +1022,7 @@
                 const res = await fetch('/api/admin/restore', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ backupData })
+                    body: JSON.stringify({ adminUserId: currentUser.id, backupData })
                 });
                 const data = await res.json();
                 showToast(data.message || data.error, res.ok ? 'success' : 'error');
@@ -1079,8 +1199,6 @@
             });
         }
 
-        // ---------------- توابع چت تیکت کاربر ----------------
-
         function backToUserTickets() {
             document.getElementById('user-tickets-main-view').classList.remove('hidden');
             document.getElementById('user-ticket-create-view').classList.add('hidden');
@@ -1254,6 +1372,96 @@
             });
         }
 
+        function openPermissionModal(targetUserId) {
+            selectedPermUserId = targetUserId;
+            const user = allUsersCache.find(u => u.id === targetUserId);
+            if(!user) return;
+
+            document.getElementById('perm-user-title').innerText = `کاربر: ${user.username}`;
+            
+            allPermissionKeys.forEach(pKey => {
+                const chk = document.getElementById(`p-${pKey}`);
+                if(chk) {
+                    chk.checked = !!(user.permissions && user.permissions[pKey]);
+                }
+            });
+
+            document.getElementById('permission-modal').classList.remove('hidden');
+        }
+
+        function closePermissionModal() {
+            document.getElementById('permission-modal').classList.add('hidden');
+        }
+
+        async function savePermissions() {
+            if(!hasPerm('promoteAdmin')) return showToast('شما دسترسی انجام این کار را ندارید.', 'error');
+
+            const permissions = {};
+            allPermissionKeys.forEach(pKey => {
+                const chk = document.getElementById(`p-${pKey}`);
+                if(chk) permissions[pKey] = chk.checked;
+            });
+
+            const res = await fetch('/api/admin/update-permissions', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ adminUserId: currentUser.id, targetUserId: selectedPermUserId, makeAdmin: true, permissions })
+            });
+            const data = await res.json();
+            showToast(data.message || data.error, res.ok ? 'success' : 'error');
+            if(res.ok) {
+                closePermissionModal();
+                loadAdminData();
+            }
+        }
+
+        async function demoteAdmin() {
+            if(!hasPerm('promoteAdmin')) return showToast('شما دسترسی انجام این کار را ندارید.', 'error');
+
+            const res = await fetch('/api/admin/update-permissions', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ adminUserId: currentUser.id, targetUserId: selectedPermUserId, makeAdmin: false, permissions: {} })
+            });
+            const data = await res.json();
+            showToast(data.message || data.error, res.ok ? 'success' : 'error');
+            if(res.ok) {
+                closePermissionModal();
+                loadAdminData();
+            }
+        }
+
+        function renderUsers(users) {
+            const usersDiv = document.getElementById('admin-users');
+            usersDiv.innerHTML = '';
+            users.forEach(u => {
+                if(u.username !== 'admin') {
+                    let roleBadgeClass = 'role-user';
+                    let roleTitle = '👤 کاربر';
+                    if(u.role === 'owner') { roleBadgeClass = 'role-owner'; roleTitle = '👑 مالک'; }
+                    else if(u.isAdmin) { roleBadgeClass = 'role-admin'; roleTitle = '🛡 مدیر'; }
+
+                    usersDiv.innerHTML += `
+                        <div class="glass-item">
+                            <b>نام کاربر:</b> ${u.username} <span class="role-badge ${roleBadgeClass}">${roleTitle}</span><br>
+                            <b>موجودی فعلی:</b> ${u.stars} ⭐ | <b>وضعیت:</b> ${u.isBanned ? '<span style="color:#f87171;">🚫 بن شده</span>' : '<span style="color:#34d399;">✅ فعال</span>'}
+                            
+                            <div style="display:flex; gap:8px; margin-top:10px; align-items:center;">
+                                <input type="number" id="set-stars-input-${u.id}" value="${u.stars}" placeholder="تعداد ستاره" style="margin:0;">
+                                <button onclick="setStarsDirect(${u.id})" style="min-width:100px; margin:0;">ثبت ستاره</button>
+                            </div>
+
+                            <div class="flex-btn">
+                                <button class="btn-blue" onclick="openPermissionModal(${u.id})">⚙️ ارتقا به مدیر / دسترسی‌ها</button>
+                                <button class="btn-warning" onclick="toggleBan(${u.id})">${u.isBanned ? 'آنبن' : 'بن کردن'}</button>
+                                <button class="btn-danger" onclick="deleteUser(${u.id})">🗑 لغو عضویت (حذف)</button>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+        }
+
         function backToAdminTickets() {
             document.getElementById('admin-tickets-main-view').classList.remove('hidden');
             document.getElementById('admin-ticket-chat-view').classList.add('hidden');
@@ -1306,6 +1514,8 @@
         }
 
         async function sendAdminChatMessage() {
+            if(!hasPerm('replyTicket')) return showToast('شما دسترسی انجام این کار را ندارید.', 'error');
+
             const text = document.getElementById('admin-chat-msg').value.trim();
             if(!text) return showToast('متن پاسخ را بنویسید.', 'error');
 
@@ -1325,11 +1535,13 @@
         }
 
         function closeAdminTicketFromChat() {
+            if(!hasPerm('closeTicket')) return showToast('شما دسترسی انجام این کار را ندارید.', 'error');
+
             customConfirm('آیا از بستن این تیکت مطمئن هستید؟ تیکت قفل می‌شود اما پاک نمی‌شود.', async () => {
                 const res = await fetch('/api/admin/close-ticket', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ ticketId: activeChatTicketId })
+                    body: JSON.stringify({ adminUserId: currentUser.id, ticketId: activeChatTicketId })
                 });
                 const data = await res.json();
                 showToast(data.message || data.error, res.ok ? 'success' : 'error');
@@ -1338,11 +1550,13 @@
         }
 
         function closeAdminTicketDirect(ticketId) {
+            if(!hasPerm('closeTicket')) return showToast('شما دسترسی انجام این کار را ندارید.', 'error');
+
             customConfirm('آیا از بستن این تیکت مطمئن هستید؟', async () => {
                 const res = await fetch('/api/admin/close-ticket', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ ticketId })
+                    body: JSON.stringify({ adminUserId: currentUser.id, ticketId })
                 });
                 const data = await res.json();
                 showToast(data.message || data.error, res.ok ? 'success' : 'error');
@@ -1351,11 +1565,13 @@
         }
 
         function deleteAdminTicketFromChat() {
+            if(!hasPerm('deleteTicket')) return showToast('شما دسترسی انجام این کار را ندارید.', 'error');
+
             customConfirm('آیا از حذف کامل این تیکت از دیتابیس مطمئن هستید؟', async () => {
                 const res = await fetch('/api/admin/delete-ticket', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ ticketId: activeChatTicketId })
+                    body: JSON.stringify({ adminUserId: currentUser.id, ticketId: activeChatTicketId })
                 });
                 const data = await res.json();
                 showToast(data.message || data.error, res.ok ? 'success' : 'error');
@@ -1364,11 +1580,13 @@
         }
 
         function deleteAdminTicketDirect(ticketId) {
+            if(!hasPerm('deleteTicket')) return showToast('شما دسترسی انجام این کار را ندارید.', 'error');
+
             customConfirm('آیا از حذف کامل این تیکت مطمئن هستید؟', async () => {
                 const res = await fetch('/api/admin/delete-ticket', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ ticketId })
+                    body: JSON.stringify({ adminUserId: currentUser.id, ticketId })
                 });
                 const data = await res.json();
                 showToast(data.message || data.error, res.ok ? 'success' : 'error');
@@ -1377,13 +1595,15 @@
         }
 
         async function setStarsDirect(userId) {
+            if(!hasPerm('changeUserStars')) return showToast('شما دسترسی انجام این کار را ندارید.', 'error');
+
             const inputVal = document.getElementById(`set-stars-input-${userId}`).value;
             if(inputVal === '') return showToast('تعداد ستاره را وارد کنید.', 'error');
 
             const res = await fetch('/api/admin/set-stars', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ userId, stars: Number(inputVal) })
+                body: JSON.stringify({ adminUserId: currentUser.id, userId, stars: Number(inputVal) })
             });
             const data = await res.json();
             showToast(data.message || data.error, res.ok ? 'success' : 'error');
@@ -1391,6 +1611,8 @@
         }
 
         async function createGiftCode() {
+            if(!hasPerm('createGiftCode')) return showToast('شما دسترسی انجام این کار را ندارید.', 'error');
+
             const code = document.getElementById('gift-code-input').value.trim();
             const stars = document.getElementById('gift-stars-input').value;
             const maxCapacity = document.getElementById('gift-capacity-input').value;
@@ -1402,7 +1624,7 @@
             const res = await fetch('/api/admin/create-gift-code', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ code, stars, maxCapacity, startDate, endDate })
+                body: JSON.stringify({ adminUserId: currentUser.id, code, stars, maxCapacity, startDate, endDate })
             });
             const data = await res.json();
             showToast(data.message || data.error, res.ok ? 'success' : 'error');
@@ -1438,11 +1660,13 @@
         }
 
         function expireGiftCode(giftId) {
+            if(!hasPerm('expireGiftCode')) return showToast('شما دسترسی انجام این کار را ندارید.', 'error');
+
             customConfirm('آیا از منقضی کردن این کد هدیه مطمئن هستید؟', async () => {
                 const res = await fetch('/api/admin/expire-gift-code', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ giftId })
+                    body: JSON.stringify({ adminUserId: currentUser.id, giftId })
                 });
                 const data = await res.json();
                 showToast(data.message || data.error, res.ok ? 'success' : 'error');
@@ -1451,6 +1675,8 @@
         }
 
         async function addAnnouncement() {
+            if(!hasPerm('createAnnouncement')) return showToast('شما دسترسی انجام این کار را ندارید.', 'error');
+
             const title = document.getElementById('anno-title').value.trim();
             const content = document.getElementById('anno-content').value.trim();
             if(!title || !content) return showToast('عنوان و متن اطلاعیه را وارد کنید.', 'error');
@@ -1458,7 +1684,7 @@
             const res = await fetch('/api/admin/announcements', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ title, content })
+                body: JSON.stringify({ adminUserId: currentUser.id, title, content })
             });
             const data = await res.json();
             showToast(data.message || data.error, res.ok ? 'success' : 'error');
@@ -1492,11 +1718,13 @@
         }
 
         function deleteAnnouncement(id) {
+            if(!hasPerm('deleteAnnouncement')) return showToast('شما دسترسی انجام این کار را ندارید.', 'error');
+
             customConfirm('آیا از حذف این اطلاعیه مطمئن هستید؟', async () => {
                 await fetch('/api/admin/delete-announcement', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ id })
+                    body: JSON.stringify({ adminUserId: currentUser.id, id })
                 });
                 showToast('اطلاعیه حذف شد.', 'success');
                 loadAdminAnnouncements();
@@ -1525,37 +1753,14 @@
             });
         }
 
-        function renderUsers(users) {
-            const usersDiv = document.getElementById('admin-users');
-            usersDiv.innerHTML = '';
-            users.forEach(u => {
-                if(!u.isAdmin) {
-                    usersDiv.innerHTML += `
-                        <div class="glass-item">
-                            <b>نام کاربر:</b> ${u.username} | <b>موجودی فعلی:</b> ${u.stars} ⭐<br>
-                            <b>وضعیت:</b> ${u.isBanned ? '<span style="color:#f87171;">🚫 بن شده</span>' : '<span style="color:#34d399;">✅ فعال</span>'}
-                            
-                            <div style="display:flex; gap:8px; margin-top:10px; align-items:center;">
-                                <input type="number" id="set-stars-input-${u.id}" value="${u.stars}" placeholder="تعداد ستاره" style="margin:0;">
-                                <button onclick="setStarsDirect(${u.id})" style="min-width:100px; margin:0;">ثبت ستاره</button>
-                            </div>
-
-                            <div class="flex-btn">
-                                <button class="btn-warning" onclick="toggleBan(${u.id})">${u.isBanned ? 'آنبن' : 'بن کردن'}</button>
-                                <button class="btn-danger" onclick="deleteUser(${u.id})">🗑 لغو عضویت (حذف)</button>
-                            </div>
-                        </div>
-                    `;
-                }
-            });
-        }
-
         function deleteUser(userId) {
+            if(!hasPerm('deleteUser')) return showToast('شما دسترسی انجام این کار را ندارید.', 'error');
+
             customConfirm('آیا از لغو عضویت و حذف کامل این کاربر مطمئن هستید؟ کاربر دیگر نمی‌تواند وارد شود.', async () => {
                 const res = await fetch('/api/admin/delete-user', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ userId })
+                    body: JSON.stringify({ adminUserId: currentUser.id, userId })
                 });
                 const data = await res.json();
                 showToast(data.message || data.error, res.ok ? 'success' : 'error');
@@ -1570,16 +1775,24 @@
         }
 
         async function toggleBan(userId) {
-            await fetch('/api/admin/toggle-ban', {
+            const targetUser = allUsersCache.find(u => u.id === userId);
+            const reqPerm = (targetUser && targetUser.isBanned) ? 'unbanUser' : 'banUser';
+
+            if(!hasPerm(reqPerm)) return showToast('شما دسترسی انجام این کار را ندارید.', 'error');
+
+            const res = await fetch('/api/admin/toggle-ban', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ userId })
+                body: JSON.stringify({ adminUserId: currentUser.id, userId })
             });
-            showToast('وضعیت بن کاربر تغییر یافت.', 'success');
-            loadAdminData();
+            const data = await res.json();
+            showToast(data.message || data.error, res.ok ? 'success' : 'error');
+            if(res.ok) loadAdminData();
         }
 
         async function addProduct() {
+            if(!hasPerm('createProduct')) return showToast('شما دسترسی انجام این کار را ندارید.', 'error');
+
             const name = document.getElementById('prod-name').value.trim();
             const price = document.getElementById('prod-price').value.trim();
             const description = document.getElementById('prod-desc').value.trim();
@@ -1593,7 +1806,7 @@
             const res = await fetch('/api/admin/add-product', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ name, price, description, previewImage, deliveryType, secretImage, secretText })
+                body: JSON.stringify({ adminUserId: currentUser.id, name, price, description, previewImage, deliveryType, secretImage, secretText })
             });
             const data = await res.json();
             showToast(data.message || data.error, res.ok ? 'success' : 'error');
@@ -1609,36 +1822,45 @@
         }
 
         function deleteProduct(productId) {
+            if(!hasPerm('deleteProduct')) return showToast('شما دسترسی انجام این کار را ندارید.', 'error');
+
             customConfirm('آیا از حذف این محصول مطمئن هستید؟', async () => {
-                await fetch('/api/admin/delete-product', {
+                const res = await fetch('/api/admin/delete-product', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ productId })
+                    body: JSON.stringify({ adminUserId: currentUser.id, productId })
                 });
-                showToast('محصول حذف شد', 'success');
-                loadAdminProducts();
+                const data = await res.json();
+                showToast(data.message || data.error, res.ok ? 'success' : 'error');
+                if(res.ok) loadAdminProducts();
             });
         }
 
         async function changeOrderStatus(orderId, status) {
-            await fetch('/api/admin/update-order-status', {
+            if(!hasPerm('updateOrderStatus')) return showToast('شما دسترسی انجام این کار را ندارید.', 'error');
+
+            const res = await fetch('/api/admin/update-order-status', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ orderId, status })
+                body: JSON.stringify({ adminUserId: currentUser.id, orderId, status })
             });
-            showToast('وضعیت سفارش تغییر کرد.', 'success');
-            loadAdminData();
+            const data = await res.json();
+            showToast(data.message || data.error, res.ok ? 'success' : 'error');
+            if(res.ok) loadAdminData();
         }
 
         function deleteOrder(orderId) {
+            if(!hasPerm('updateOrderStatus')) return showToast('شما دسترسی انجام این کار را ندارید.', 'error');
+
             customConfirm('آیا از حذف این سفارش مطمئن هستید؟', async () => {
-                await fetch('/api/admin/delete-order', {
+                const res = await fetch('/api/admin/delete-order', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ orderId })
+                    body: JSON.stringify({ adminUserId: currentUser.id, orderId })
                 });
-                showToast('سفارش حذف شد.', 'success');
-                loadAdminData();
+                const data = await res.json();
+                showToast(data.message || data.error, res.ok ? 'success' : 'error');
+                if(res.ok) loadAdminData();
             });
         }
 
